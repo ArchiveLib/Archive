@@ -16,7 +16,7 @@ Library.Theme = {
     SubText = Color3.fromRGB(145, 148, 155),
     Accent = Color3.fromRGB(145, 95, 255),
 }
-
+-- wsp
 --// Settings
 Library.Name = "Archive"
 Library.Connections = {}
@@ -1585,6 +1585,7 @@ function Tab:CreateToggle(Options)
 
         Font = Enum.Font.GothamMedium,
         Text = ToggleName,
+        RichText = true,
         TextColor3 = Theme.Text,
         TextSize = 11,
 
