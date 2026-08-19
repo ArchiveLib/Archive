@@ -4042,7 +4042,5 @@ end
 end
 
 print("["..Library.Name.."]" .. " Loaded.")
-	
-Library:LoadConfig("Test")
 
 return Library
