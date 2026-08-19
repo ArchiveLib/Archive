@@ -4035,8 +4035,8 @@ end
         return true
     end
 
-    Library.SaveConfig = SaveConfig
-    Library.LoadConfig = LoadConfig
+    -- Library.SaveConfig = SaveConfig
+    -- Library.LoadConfig = LoadConfig
 
     return WindowObject
 end
