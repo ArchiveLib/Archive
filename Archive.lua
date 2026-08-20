@@ -1609,7 +1609,7 @@ function Tab:CreateToggle(Options)
 
         Size = UDim2.fromOffset(38, 20),
 
-        BackgroundColor3 = Theme.Border,
+        BackgroundColor3 = Options.SwitchColor or Theme.Border,
         BackgroundTransparency = 0.15,
 
         BorderSizePixel = 0,
