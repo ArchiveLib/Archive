@@ -2970,214 +2970,213 @@ function Tab:CreateDivider()
     return DividerObject
 end
 
-    function Tab:CreateTextbox(Options)
-        Options = Options or {}
+function Tab:CreateTextbox(Options)
+    Options = Options or {}
 
-        local TextboxName = Options.Name or "Textbox"
-        local Default = tostring(Options.Default or "")
-        local Placeholder = tostring(Options.Placeholder or "Type here...")
-        local ClearOnFocus = Options.ClearOnFocus == true
-        local Callback = Options.Callback
+    local TextboxName = Options.Name or "Textbox"
+    local Default = tostring(Options.Default or "")
+    local Placeholder = tostring(Options.Placeholder or "Type here...")
+    local ClearOnFocus = Options.ClearOnFocus == true
+    local Callback = Options.Callback
 
-        local CurrentText = Default
+    local CurrentText = Default
 
-        --==================================================
-        --// GET COMPONENT ROW
-        --==================================================
+    --==================================================
+    --// GET COMPONENT ROW
+    --==================================================
 
-        local Row = GetComponentRow()
+    local Row = GetComponentRow()
 
-        --==================================================
-        --// COMPONENT
-        --==================================================
+    --==================================================
+    --// COMPONENT
+    --==================================================
 
-        local Component = Create("Frame", {
-            Name = TextboxName,
-            Parent = Row,
+    local Component = Create("Frame", {
+        Name = TextboxName,
+        Parent = Row,
 
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
 
-            Size = UDim2.new(0.5, -4, 0, 32),
+        Size = UDim2.new(0.5, -4, 0, 32),
 
-            ZIndex = 5,
-        })
+        ZIndex = 5,
+    })
 
-        --==================================================
-        --// LABEL
-        --==================================================
+    --==================================================
+    --// LABEL
+    --==================================================
 
-        local Label = Create("TextLabel", {
-            Name = "Label",
-            Parent = Component,
+    local Label = Create("TextLabel", {
+        Name = "Label",
+        Parent = Component,
 
-            BackgroundTransparency = 1,
+        BackgroundTransparency = 1,
 
-            Position = UDim2.fromOffset(2, 0),
-            Size = UDim2.new(1, -115, 1, 0),
+        Position = UDim2.fromOffset(2, 0),
+        Size = UDim2.new(1, -115, 1, 0),
 
-            Font = Enum.Font.GothamMedium,
-            Text = TextboxName,
-            TextColor3 = Theme.Text,
-            TextSize = 11,
+        Font = Enum.Font.GothamMedium,
+        Text = TextboxName,
+        TextColor3 = Theme.Text,
+        TextSize = 11,
 
-            TextXAlignment = Enum.TextXAlignment.Left,
-            TextYAlignment = Enum.TextYAlignment.Center,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Center,
 
-            ZIndex = 6,
-        })
+        ZIndex = 6,
+    })
 
-        --==================================================
-        --// TEXTBOX INPUT
-        --==================================================
+    --==================================================
+    --// TEXTBOX INPUT
+    --==================================================
 
-        local InputBox = Create("TextBox", {
-            Name = "Input",
-            Parent = Component,
+    local InputBox = Create("TextBox", {
+        Name = "Input",
+        Parent = Component,
 
-            AnchorPoint = Vector2.new(1, 0.5),
-            Position = UDim2.new(1, 0, 0.5, 0),
+        AnchorPoint = Vector2.new(1, 0.5),
+        Position = UDim2.new(1, 0, 0.5, 0),
 
-            Size = UDim2.fromOffset(105, 27),
+        Size = UDim2.fromOffset(105, 27),
 
-            BackgroundColor3 = Theme.Border,
+        BackgroundColor3 = Theme.Border,
+        BackgroundTransparency = 0.25,
+
+        BorderSizePixel = 0,
+
+        Font = Enum.Font.Gotham,
+        Text = Default,
+        PlaceholderText = Placeholder,
+        PlaceholderColor3 = Theme.SubText,
+        TextColor3 = Theme.Text,
+        TextSize = 10,
+
+        ClearTextOnFocus = ClearOnFocus,
+        ClipsDescendants = true,
+
+        ZIndex = 6,
+    })
+
+    Create("UICorner", {
+        Parent = InputBox,
+        CornerRadius = UDim.new(0, 5),
+    })
+
+    Create("UIPadding", {
+        Parent = InputBox,
+        PaddingLeft = UDim.new(0, 8),
+        PaddingRight = UDim.new(0, 8),
+    })
+
+    --==================================================
+    --// FOCUS ANIMATIONS & CALLBACK
+    --==================================================
+
+    Connect(InputBox.Focused, function()
+        Tween(InputBox, {
+            BackgroundTransparency = 0,
+            BackgroundColor3 = Theme.Accent,
+        }, 0.12)
+    end)
+
+    Connect(InputBox.FocusLost, function(EnterPressed)
+        Tween(InputBox, {
             BackgroundTransparency = 0.25,
+            BackgroundColor3 = Theme.Border,
+        }, 0.12)
 
-            BorderSizePixel = 0,
+        CurrentText = InputBox.Text
 
-            Font = Enum.Font.Gotham,
-            Text = Default,
-            PlaceholderText = Placeholder,
-            PlaceholderColor3 = Theme.SubText,
-            TextColor3 = Theme.Text,
-            TextSize = 10,
+        if type(Callback) == "function" then
+            local Success, Error = pcall(Callback, CurrentText, EnterPressed)
 
-            ClearTextOnFocus = ClearOnFocus,
-            ClipsDescendants = true,
+            if not Success then
+                warn(
+                    "[" .. Library.Name .. "] Textbox callback failed: " ..
+                    tostring(Error)
+                )
+            end
+        end
+    end)
 
-            ZIndex = 6,
-        })
+    --==================================================
+    --// HOVER
+    --==================================================
 
-        Create("UICorner", {
-            Parent = InputBox,
-            CornerRadius = UDim.new(0, 5),
-        })
-
-        Create("UIPadding", {
-            Parent = InputBox,
-            PaddingLeft = UDim.new(0, 8),
-            PaddingRight = UDim.new(0, 8),
-        })
-
-        --==================================================
-        --// FOCUS ANIMATIONS & CALLBACK
-        --==================================================
-
-        Connect(InputBox.Focused, function()
+    Connect(InputBox.MouseEnter, function()
+        if not InputBox:IsFocused() then
             Tween(InputBox, {
-                BackgroundTransparency = 0,
-                BackgroundColor3 = Theme.Accent,
-            }, 0.12)
-        end)
+                BackgroundTransparency = 0.10,
+            }, 0.10)
+        end
+    end)
 
-        Connect(InputBox.FocusLost, function(EnterPressed)
+    Connect(InputBox.MouseLeave, function()
+        if not InputBox:IsFocused() then
             Tween(InputBox, {
                 BackgroundTransparency = 0.25,
-                BackgroundColor3 = Theme.Border,
-            }, 0.12)
-
-            CurrentText = InputBox.Text
-
-            if type(Callback) == "function" then
-                local Success, Error = pcall(Callback, CurrentText, EnterPressed)
-
-                if not Success then
-                    warn(
-                        "[" .. Library.Name .. "] Textbox callback failed: " ..
-                        tostring(Error)
-                    )
-                end
-            end
-        end)
-
-        --==================================================
-        --// HOVER
-        --==================================================
-
-        Connect(InputBox.MouseEnter, function()
-            if not InputBox:IsFocused() then
-                Tween(InputBox, {
-                    BackgroundTransparency = 0.10,
-                }, 0.10)
-            end
-        end)
-
-        Connect(InputBox.MouseLeave, function()
-            if not InputBox:IsFocused() then
-                Tween(InputBox, {
-                    BackgroundTransparency = 0.25,
-                }, 0.10)
-            end
-        end)
-
-        --==================================================
-        --// TEXTBOX OBJECT
-        --==================================================
-
-        local TextboxObject = {}
-
-        function TextboxObject:Set(Text)
-            CurrentText = tostring(Text or "")
-            InputBox.Text = CurrentText
-
-            if type(Callback) == "function" then
-                pcall(Callback, CurrentText, false)
-            end
+            }, 0.10)
         end
+    end)
 
-        function TextboxObject:Get()
-            return InputBox.Text
+    --==================================================
+    --// TEXTBOX OBJECT
+    --==================================================
+
+    local TextboxObject = {}
+
+    function TextboxObject:Set(Text)
+        CurrentText = tostring(Text or "")
+        InputBox.Text = CurrentText
+
+        if type(Callback) == "function" then
+            pcall(Callback, CurrentText, false)
         end
-
-        function TextboxObject:Clear()
-            CurrentText = ""
-            InputBox.Text = ""
-
-            if type(Callback) == "function" then
-                pcall(Callback, "", false)
-            end
-        end
-
-        function TextboxObject:Destroy()
-            pcall(function()
-                Component:Destroy()
-            end)
-        end
-
-        --==================================================
-        --// OPTIONAL CONFIG REGISTRATION
-        --==================================================
-
-        if Options.Identifier then
-            RegisterConfigComponent(
-                Options.Identifier,
-
-                function()
-                    return TextboxObject:Get()
-                end,
-
-                function(NewValue)
-                    TextboxObject:Set(NewValue)
-                end
-            )
-        end
-
-        TextboxObject.Instance = Component
-        TextboxObject.Input = InputBox
-
-        return TextboxObject
     end
 
+    function TextboxObject:Get()
+        return InputBox.Text
+    end
+
+    function TextboxObject:Clear()
+        CurrentText = ""
+        InputBox.Text = ""
+
+        if type(Callback) == "function" then
+            pcall(Callback, "", false)
+        end
+    end
+
+    function TextboxObject:Destroy()
+        pcall(function()
+            Component:Destroy()
+        end)
+    end
+
+    --==================================================
+    --// OPTIONAL CONFIG REGISTRATION
+    --==================================================
+
+    if Options.Identifier then
+        RegisterConfigComponent(
+            Options.Identifier,
+
+            function()
+                return TextboxObject:Get()
+            end,
+
+            function(NewValue)
+                TextboxObject:Set(NewValue)
+            end
+        )
+    end
+
+    TextboxObject.Instance = Component
+    TextboxObject.Input = InputBox
+
+    return TextboxObject
+end
 
 --==================================================
 --// NOTIFICATION
