@@ -3206,6 +3206,97 @@ function Tab:CreateDivider()
     return DividerObject
 end
 
+--============================================
+--// SHOW CONFIRMATION FEATURE
+--============================================
+
+function Window:ShowConfirmation(Options)
+    Options = Options or {}
+    local Title = Options.Title or "Are you sure?"
+    local Content = Options.Content or "This action cannot be undone."
+    local ConfirmText = Options.ConfirmText or "Confirm"
+    local CancelText = Options.CancelText or "Cancel"
+    local OnConfirm = Options.OnConfirm or function() end
+    local OnCancel = Options.OnCancel or function() end
+
+    local Overlay = Create("Frame", {
+        Name = "ConfirmationOverlay",
+        Parent = self.ScreenGui,
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        BackgroundTransparency = 0.5,
+        ZIndex = 100,
+        BorderSizePixel = 0,
+    })
+
+    local Dialog = Create("Frame", {
+        Name = "ConfirmDialog",
+        Parent = Overlay,
+        Size = UDim2.new(0, 280, 0, 150),
+        Position = UDim2.new(0.5, -140, 0.5, -75),
+        BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+        BorderSizePixel = 0,
+        ZIndex = 101,
+    })
+
+    Create("UICorner", { Parent = Dialog, CornerRadius = UDim.new(0, 8) })
+    Create("UIStroke", { Parent = Dialog, Color = Color3.fromRGB(60, 60, 60), Thickness = 1 })
+
+    Create("TextLabel", {
+        Name = "TitleLabel",
+        Parent = Dialog,
+        Size = UDim2.new(1, -20, 0, 36),
+        Position = UDim2.new(0, 10, 0, 8),
+        BackgroundTransparency = 1,
+        Text = Title,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Font = Enum.Font.GothamBold,
+        TextSize = 15,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 102,
+    })
+
+    Create("TextLabel", {
+        Name = "ContentLabel",
+        Parent = Dialog,
+        Size = UDim2.new(1, -20, 0, 40),
+        Position = UDim2.new(0, 10, 0, 48),
+        BackgroundTransparency = 1,
+        Text = Content,
+        TextColor3 = Color3.fromRGB(180, 180, 180),
+        Font = Enum.Font.Gotham,
+        TextSize = 13,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextWrapped = true,
+        ZIndex = 102,
+    })
+
+    local function MakeButton(LabelText, BgColor, XPos, Callback)
+        local Btn = Create("TextButton", {
+            Name = LabelText .. "Btn",
+            Parent = Dialog,
+            Size = UDim2.new(0, 115, 0, 32),
+            Position = UDim2.new(0, XPos, 1, -42),
+            BackgroundColor3 = BgColor,
+            BorderSizePixel = 0,
+            Text = LabelText,
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            Font = Enum.Font.GothamBold,
+            TextSize = 13,
+            ZIndex = 102,
+        })
+        Create("UICorner", { Parent = Btn, CornerRadius = UDim.new(0, 6) })
+
+        Btn.MouseButton1Click:Connect(function()
+            pcall(function() Overlay:Destroy() end)
+            Callback()
+        end)
+    end
+
+    MakeButton(ConfirmText, Color3.fromRGB(180, 50, 50), 10,  OnConfirm)
+    MakeButton(CancelText,  Color3.fromRGB(55, 55, 55),  135, OnCancel)
+end
+
 --==================================================
 --// NOTIFICATION
 --==================================================
@@ -3612,97 +3703,6 @@ function Library:Notify(Options)
     end
 
     return NotificationObject
-end
-
---============================================
---// SHOW CONFIRMATION FEATURE
---============================================
-
-function Window:ShowConfirmation(Options)
-    Options = Options or {}
-    local Title = Options.Title or "Are you sure?"
-    local Content = Options.Content or "This action cannot be undone."
-    local ConfirmText = Options.ConfirmText or "Confirm"
-    local CancelText = Options.CancelText or "Cancel"
-    local OnConfirm = Options.OnConfirm or function() end
-    local OnCancel = Options.OnCancel or function() end
-
-    local Overlay = Create("Frame", {
-        Name = "ConfirmationOverlay",
-        Parent = self.ScreenGui,
-        Size = UDim2.new(1, 0, 1, 0),
-        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-        BackgroundTransparency = 0.5,
-        ZIndex = 100,
-        BorderSizePixel = 0,
-    })
-
-    local Dialog = Create("Frame", {
-        Name = "ConfirmDialog",
-        Parent = Overlay,
-        Size = UDim2.new(0, 280, 0, 150),
-        Position = UDim2.new(0.5, -140, 0.5, -75),
-        BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-        BorderSizePixel = 0,
-        ZIndex = 101,
-    })
-
-    Create("UICorner", { Parent = Dialog, CornerRadius = UDim.new(0, 8) })
-    Create("UIStroke", { Parent = Dialog, Color = Color3.fromRGB(60, 60, 60), Thickness = 1 })
-
-    Create("TextLabel", {
-        Name = "TitleLabel",
-        Parent = Dialog,
-        Size = UDim2.new(1, -20, 0, 36),
-        Position = UDim2.new(0, 10, 0, 8),
-        BackgroundTransparency = 1,
-        Text = Title,
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        Font = Enum.Font.GothamBold,
-        TextSize = 15,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        ZIndex = 102,
-    })
-
-    Create("TextLabel", {
-        Name = "ContentLabel",
-        Parent = Dialog,
-        Size = UDim2.new(1, -20, 0, 40),
-        Position = UDim2.new(0, 10, 0, 48),
-        BackgroundTransparency = 1,
-        Text = Content,
-        TextColor3 = Color3.fromRGB(180, 180, 180),
-        Font = Enum.Font.Gotham,
-        TextSize = 13,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        TextWrapped = true,
-        ZIndex = 102,
-    })
-
-    local function MakeButton(LabelText, BgColor, XPos, Callback)
-        local Btn = Create("TextButton", {
-            Name = LabelText .. "Btn",
-            Parent = Dialog,
-            Size = UDim2.new(0, 115, 0, 32),
-            Position = UDim2.new(0, XPos, 1, -42),
-            BackgroundColor3 = BgColor,
-            BorderSizePixel = 0,
-            Text = LabelText,
-            TextColor3 = Color3.fromRGB(255, 255, 255),
-            Font = Enum.Font.GothamBold,
-            TextSize = 13,
-            ZIndex = 102,
-        })
-        Create("UICorner", { Parent = Btn, CornerRadius = UDim.new(0, 6) })
-
-        Btn.MouseButton1Click:Connect(function()
-            pcall(function() Overlay:Destroy() end)
-            Callback()
-        end)
-    end
-
-    MakeButton(ConfirmText, Color3.fromRGB(180, 50, 50), 10,  OnConfirm)
-    MakeButton(CancelText,  Color3.fromRGB(55, 55, 55),  135, OnCancel)
 end
 
     --====================================================
