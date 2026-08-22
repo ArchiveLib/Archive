@@ -2205,7 +2205,7 @@ function Tab:CreateDropdown(Options)
             Font = Enum.Font.Gotham,
             Text = tostring(Value),
             TextColor3 = Theme.SubText,
-            TextSize = 10,
+            TextSize = 11,
 
             TextXAlignment = Enum.TextXAlignment.Left,
 
