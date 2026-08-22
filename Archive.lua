@@ -259,6 +259,7 @@ function Library:CreateWindow(Options)
     local ScreenGui = Create("ScreenGui", {
         Name = self.Name,
         ResetOnSpawn = false,
+        DisplayOrder = 2147483647
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
         Parent = Parent,
     })
@@ -2153,7 +2154,7 @@ function Tab:CreateDropdown(Options)
         ClipsDescendants = true,
         Visible = false,
 
-        ZIndex = 20,
+        ZIndex = 1000,
     })
 
     Create("UICorner", {
