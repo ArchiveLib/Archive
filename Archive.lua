@@ -2154,7 +2154,7 @@ function Tab:CreateDropdown(Options)
         ClipsDescendants = true,
         Visible = false,
 
-        ZIndex = 1000,
+        ZIndex = 999999,
     })
 
     Create("UICorner", {
