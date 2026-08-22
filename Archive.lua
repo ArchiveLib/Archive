@@ -2383,6 +2383,33 @@ function Tab:CreateDropdown(Options)
         end)
     end
 
+    function DropdownObject:Refresh(NewOptions)
+        -- Clear existing options
+        for _, Child in ipairs(OptionsFrame:GetChildren()) do
+            if Child:IsA("TextButton") then
+                Child:Destroy()
+            end
+        end
+
+        -- Add new options
+        DropdownOptions = NewOptions or {}
+        
+        for Index, Value in ipairs(DropdownOptions) do
+            CreateOption(Value, Index)
+        end
+
+        -- Update selected if options changed
+        if #DropdownOptions > 0 then
+            if not table.find(DropdownOptions, Selected) then
+                Selected = DropdownOptions[1]
+                DropdownButton.Text = tostring(Selected)
+            end
+        else
+            Selected = nil
+            DropdownButton.Text = "Select"
+        end
+    end
+
 --==================================================
 --// CONFIG REGISTRATION
 --==================================================
