@@ -1316,7 +1316,7 @@ local TabButton = Create("TextButton", {
     Font = Enum.Font.GothamMedium,
     Text = TabName,
     TextColor3 = Theme.SubText,
-    TextSize = 11,
+    TextSize = 12,
 
     TextXAlignment = Enum.TextXAlignment.Left,
 
@@ -1386,7 +1386,7 @@ function Tab:CreateButton(Options)
         Font = Enum.Font.GothamMedium,
         Text = ButtonName,
         TextColor3 = Theme.Text,
-        TextSize = 11,
+        TextSize = 12,
 
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Center,
@@ -1418,7 +1418,7 @@ function Tab:CreateButton(Options)
         Font = Enum.Font.GothamMedium,
         Text = ButtonText,
         TextColor3 = Theme.Text,
-        TextSize = 10,
+        TextSize = 11,
 
         ZIndex = 6,
     })
@@ -1588,7 +1588,7 @@ function Tab:CreateToggle(Options)
         Text = ToggleName,
         RichText = true,
         TextColor3 = Theme.Text,
-        TextSize = 11,
+        TextSize = 12,
 
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Center,
@@ -1851,7 +1851,7 @@ function Tab:CreateTextbox(Options)
         Font = Enum.Font.GothamMedium,
         Text = TextboxName,
         TextColor3 = Theme.Text,
-        TextSize = 11,
+        TextSize = 12,
 
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Center,
@@ -2060,7 +2060,7 @@ function Tab:CreateDropdown(Options)
         Font = Enum.Font.GothamMedium,
         Text = DropdownName,
         TextColor3 = Theme.Text,
-        TextSize = 11,
+        TextSize = 12,
 
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Center,
@@ -2511,7 +2511,7 @@ function Tab:CreateSlider(Options)
         Font = Enum.Font.GothamMedium,
         Text = SliderName,
         TextColor3 = Theme.Text,
-        TextSize = 11,
+        TextSize = 12,
 
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Center,
@@ -2877,7 +2877,7 @@ function Tab:CreateInput(Options)
         Font = Enum.Font.GothamMedium,
         Text = InputName,
         TextColor3 = Theme.Text,
-        TextSize = 11,
+        TextSize = 12,
 
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Center,
@@ -3132,7 +3132,7 @@ function Tab:CreateLabel(Options)
         Font = Enum.Font.GothamMedium,
         Text = LabelText,
         TextColor3 = Theme.SubText,
-        TextSize = 11,
+        TextSize = 12,
 
         TextWrapped = true,
 
@@ -4331,7 +4331,7 @@ end
             Text = Content,
             TextColor3 = Theme.SubText,
             Font = Enum.Font.Gotham,
-            TextSize = 13,
+            TextSize = 14,
             TextXAlignment = Enum.TextXAlignment.Left,
             TextWrapped = true,
             ZIndex = 102,
@@ -4348,7 +4348,7 @@ end
                 Text = LabelText,
                 TextColor3 = Theme.Text,
                 Font = Enum.Font.GothamBold,
-                TextSize = 13,
+                TextSize = 12,
                 ZIndex = 102,
             })
             Create("UICorner", { Parent = Btn, CornerRadius = UDim.new(0, 6) })
