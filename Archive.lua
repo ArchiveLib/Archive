@@ -2827,6 +2827,149 @@ function Tab:CreateInput(Options)
         end)
     end
 
+
+    --==================================================
+    --// CONFIG REGISTRATION
+    --==================================================
+
+    if Options.Identifier then
+        RegisterConfigComponent(
+            Options.Identifier,
+
+            function()
+                return InputObject:Get()
+            end,
+
+            function(NewValue)
+                InputObject:Set(NewValue)
+            end
+        )
+    end
+
+    InputObject.Instance = Component
+    InputObject.Button = InputButton
+
+    return InputObject
+end
+
+function Tab:CreateLabel(Options)
+    Options = Options or {}
+
+    local LabelText = tostring(Options.Text or "Label")
+
+    --==================================================
+    --// GET COMPONENT ROW
+    --==================================================
+
+    local Row = GetComponentRow()
+
+    --==================================================
+    --// COMPONENT
+    --==================================================
+
+    local Component = Create("Frame", {
+        Name = "Label",
+
+        Parent = Row,
+
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+
+        Size = UDim2.new(0.5, -4, 0, 30),
+
+        ZIndex = 5,
+    })
+
+    --==================================================
+    --// LABEL
+    --==================================================
+
+    local Label = Create("TextLabel", {
+        Name = "Text",
+
+        Parent = Component,
+
+        BackgroundTransparency = 1,
+
+        Size = UDim2.new(1, 0, 1, 0),
+
+        Font = Enum.Font.GothamMedium,
+        Text = LabelText,
+        TextColor3 = Theme.SubText,
+        TextSize = 11,
+
+        TextWrapped = true,
+
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Center,
+
+        ZIndex = 6,
+    })
+
+    --==================================================
+    --// LABEL OBJECT
+    --==================================================
+
+    local LabelObject = {}
+
+    function LabelObject:SetText(Text)
+        pcall(function()
+            Label.Text = tostring(Text)
+        end)
+    end
+
+    function LabelObject:GetText()
+        return Label.Text
+    end
+
+    function LabelObject:Destroy()
+        pcall(function()
+            Component:Destroy()
+        end)
+    end
+
+    LabelObject.Instance = Component
+    LabelObject.Label = Label
+
+    return LabelObject
+end
+
+function Tab:CreateDivider()
+    --==================================================
+    --// DIVIDER
+    --==================================================
+
+    local Divider = Create("Frame", {
+        Name = "Divider",
+        Parent = TabContent,
+
+        BackgroundColor3 = Theme.Border,
+        BackgroundTransparency = 0.25,
+
+        BorderSizePixel = 0,
+
+        Size = UDim2.new(1, 0, 0, 1),
+
+        ZIndex = 5,
+    })
+
+    --==================================================
+    --// DIVIDER OBJECT
+    --==================================================
+
+    local DividerObject = {}
+
+    function DividerObject:Destroy()
+        pcall(function()
+            Divider:Destroy()
+        end)
+    end
+
+    DividerObject.Instance = Divider
+
+    return DividerObject
+end
+
     function Tab:CreateTextbox(Options)
         Options = Options or {}
 
@@ -3035,147 +3178,6 @@ function Tab:CreateInput(Options)
         return TextboxObject
     end
 
-    --==================================================
-    --// CONFIG REGISTRATION
-    --==================================================
-
-    if Options.Identifier then
-        RegisterConfigComponent(
-            Options.Identifier,
-
-            function()
-                return InputObject:Get()
-            end,
-
-            function(NewValue)
-                InputObject:Set(NewValue)
-            end
-        )
-    end
-
-    InputObject.Instance = Component
-    InputObject.Button = InputButton
-
-    return InputObject
-end
-
-function Tab:CreateLabel(Options)
-    Options = Options or {}
-
-    local LabelText = tostring(Options.Text or "Label")
-
-    --==================================================
-    --// GET COMPONENT ROW
-    --==================================================
-
-    local Row = GetComponentRow()
-
-    --==================================================
-    --// COMPONENT
-    --==================================================
-
-    local Component = Create("Frame", {
-        Name = "Label",
-
-        Parent = Row,
-
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-
-        Size = UDim2.new(0.5, -4, 0, 30),
-
-        ZIndex = 5,
-    })
-
-    --==================================================
-    --// LABEL
-    --==================================================
-
-    local Label = Create("TextLabel", {
-        Name = "Text",
-
-        Parent = Component,
-
-        BackgroundTransparency = 1,
-
-        Size = UDim2.new(1, 0, 1, 0),
-
-        Font = Enum.Font.GothamMedium,
-        Text = LabelText,
-        TextColor3 = Theme.SubText,
-        TextSize = 11,
-
-        TextWrapped = true,
-
-        TextXAlignment = Enum.TextXAlignment.Left,
-        TextYAlignment = Enum.TextYAlignment.Center,
-
-        ZIndex = 6,
-    })
-
-    --==================================================
-    --// LABEL OBJECT
-    --==================================================
-
-    local LabelObject = {}
-
-    function LabelObject:SetText(Text)
-        pcall(function()
-            Label.Text = tostring(Text)
-        end)
-    end
-
-    function LabelObject:GetText()
-        return Label.Text
-    end
-
-    function LabelObject:Destroy()
-        pcall(function()
-            Component:Destroy()
-        end)
-    end
-
-    LabelObject.Instance = Component
-    LabelObject.Label = Label
-
-    return LabelObject
-end
-
-function Tab:CreateDivider()
-    --==================================================
-    --// DIVIDER
-    --==================================================
-
-    local Divider = Create("Frame", {
-        Name = "Divider",
-        Parent = TabContent,
-
-        BackgroundColor3 = Theme.Border,
-        BackgroundTransparency = 0.25,
-
-        BorderSizePixel = 0,
-
-        Size = UDim2.new(1, 0, 0, 1),
-
-        ZIndex = 5,
-    })
-
-    --==================================================
-    --// DIVIDER OBJECT
-    --==================================================
-
-    local DividerObject = {}
-
-    function DividerObject:Destroy()
-        pcall(function()
-            Divider:Destroy()
-        end)
-    end
-
-    DividerObject.Instance = Divider
-
-    return DividerObject
-end
 
 --==================================================
 --// NOTIFICATION
