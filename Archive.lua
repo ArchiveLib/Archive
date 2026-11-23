@@ -1,6 +1,7 @@
 if not game:IsLoaded() then local t = 0; while not game:IsLoaded() and t < 20 do task.wait(0.1); t = t + 0.1 end end
 if type(shared.ArchiveCleanup) == "function" then pcall(shared.ArchiveCleanup) end
 
+local BUILD = "dev-build 1.0.69"
 local placeids = {
     chime = 12522881268,
     lobby = 4111023553
@@ -389,7 +390,6 @@ elseif game.PlaceId == placeids.lobby then
     player:Kick("Script does not support the main lobby")
 end
 
-local BUILD = "dev-build 1.0.49"
 local G = {}
 G.tw = (task and task.wait) or wait
 G.ts = (task and task.spawn) or spawn
