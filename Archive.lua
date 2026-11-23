@@ -1,7 +1,7 @@
 if not game:IsLoaded() then local t = 0; while not game:IsLoaded() and t < 20 do task.wait(0.1); t = t + 0.1 end end
 if type(shared.ArchiveCleanup) == "function" then pcall(shared.ArchiveCleanup) end
 
-local BUILD = "dev-build 1.0.57"
+local BUILD = "dev-build 1.0.58"
 
 local ARCHIVE_SETTINGS = {menu_kick = true}
 pcall(function()
@@ -1707,42 +1707,22 @@ do
 end
 
 
-local AGIL = {conn = nil, gcH = {}, oA = {}, oV = {}, oSpd = 16, snapChar = nil}
+local AGIL = {conn = nil, pa = nil, paOrig = nil, oSpd = 16, snapChar = nil}
 do
     function AGIL.snap()
-        AGIL.oA, AGIL.oV = {}, {}
         local ch = G.LP and G.LP.Character; if not ch then return end
         local h = ch:FindFirstChildOfClass("Humanoid"); if h then AGIL.oSpd = h.WalkSpeed end
-        pcall(function() for _, d in ipairs(ch:GetDescendants()) do
-            for k, v in pairs(d:GetAttributes()) do local kl = string.lower(k)
-                if string.find(kl, "agil", 1, true) or string.find(kl, "passive", 1, true) then G.ti(AGIL.oA, {o = d, k = k, v = v}) end end
-            if d:IsA("ValueBase") then local nl = string.lower(d.Name)
-                if string.find(nl, "agil", 1, true) or string.find(nl, "passive", 1, true) then G.ti(AGIL.oV, {o = d, v = d.Value}) end end end end)
+        AGIL.pa = ch:FindFirstChild("PassiveAgility")
+        AGIL.paOrig = AGIL.pa and AGIL.pa.Value or nil
     end
     function AGIL.restore()
-        for _, e in ipairs(AGIL.oA) do pcall(function() if e.o and e.o.Parent then e.o:SetAttribute(e.k, e.v) end end) end
-        for _, e in ipairs(AGIL.oV) do pcall(function() if e.o and e.o.Parent then e.o.Value = e.v end end) end
-        for _, h in ipairs(AGIL.gcH) do pcall(function() h.o[h.k] = h.v end) end
+        if AGIL.pa and AGIL.pa.Parent and AGIL.paOrig ~= nil then
+            pcall(function() AGIL.pa.Value = AGIL.paOrig end)
+        end
+        AGIL.paOrig = nil
     end
     function AGIL.en()
         if AGIL.conn then return end
-        AGIL.gcH = {}
-        if type(getgc) == "function" then
-            pcall(function()
-                for _, o in ipairs(getgc(true)) do
-                    if type(o) == "table" then
-                        for k, v in pairs(o) do
-                            if type(k) == "string" and type(v) == "number" then
-                                local kl = string.lower(k)
-                                if string.find(kl, "agil", 1, true) or string.find(kl, "passive", 1, true) then
-                                    G.ti(AGIL.gcH, {o = o, k = k, v = v})
-                                end
-                            end
-                        end
-                    end
-                end
-            end)
-        end
         AGIL.snapChar = nil
         local cachedEFR; pcall(function() cachedEFR = require(G.RepS:WaitForChild("EffectReplicator", 5)) end)
         local tick = 0
@@ -1751,13 +1731,11 @@ do
             if not ch then AGIL.snapChar = nil; return end
             if S.agil then
                 if AGIL.snapChar ~= ch then AGIL.snap(); AGIL.snapChar = ch end
-                local val = CFG.AgilVal
-                pcall(function() for _, d in ipairs(ch:GetDescendants()) do
-                    for k in pairs(d:GetAttributes()) do local kl = string.lower(k)
-                        if string.find(kl, "agil", 1, true) or string.find(kl, "passive", 1, true) then d:SetAttribute(k, val) end end
-                    if d:IsA("ValueBase") then local nl = string.lower(d.Name)
-                        if string.find(nl, "agil", 1, true) or string.find(nl, "passive", 1, true) then d.Value = val end end end end)
-                for _, h in ipairs(AGIL.gcH) do pcall(function() h.o[h.k] = val end) end
+                local pa = AGIL.pa
+                if pa and pa.Parent then
+                    local val = CFG.AgilVal
+                    pcall(function() if pa.Value ~= val then pa.Value = val end end)
+                end
             elseif AGIL.snapChar then AGIL.restore(); AGIL.snapChar = nil end
             if S.agSpd and not S.fly then
                 local hum = ch:FindFirstChildOfClass("Humanoid")
@@ -1804,7 +1782,7 @@ do
         if AGIL.conn then AGIL.conn:Disconnect(); AGIL.conn = nil end
         AGIL.restore()
         local hum = G.myH(); if hum then hum.WalkSpeed = AGIL.oSpd end
-        AGIL.oA, AGIL.oV, AGIL.gcH, AGIL.snapChar = {}, {}, {}, nil
+        AGIL.pa, AGIL.paOrig, AGIL.snapChar = nil, nil, nil
     end
 end
 
@@ -6205,4 +6183,4 @@ shared.ArchiveCleanup = function()
     pcall(destroyOld)
     pcall(function() if FLY then FLY.dis() end end)
 end
--- build 1.0.57
+-- build 1.0.58
