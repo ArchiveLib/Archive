@@ -7,7 +7,8 @@ local placeids = {
     lobby = 4111023553,
     eastern = 6473861193,
     etrean = 6032399813,
-    depths = 5735553160
+    depths = 5735553160,
+    dungeon = 8668476218
 }
 
 if game.PlaceId == placeids.chime then
