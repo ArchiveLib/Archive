@@ -2242,7 +2242,7 @@ local TP_LOCS = {
     {n = "[VOI] Shogun", type = "shogun", stream = G.V3(-8983.13477, 894.127563, -4054.67822)},
     {n = "[VOI] Golden Rat", type = "goldenrat", stream = G.V3(-2829.87646, 56.4980431, -3300.2854)},
 }
-local TELE = {conn = nil, dest = nil, destName = nil, fCount = 0, lastStream = 0}
+local TELE = {conn = nil, dest = nil, destName = nil, fCount = 0, lastStream = 0, tpSafeOwned = false}
 do
     local efr = nil
     pcall(function() efr = require(G.RepS:FindFirstChild("EffectReplicator") or G.RepS:WaitForChild("EffectReplicator", 2)) end)
@@ -2278,6 +2278,13 @@ do
     function TELE.go(loc)
         TELE.dest = loc; TELE.destName = loc.n; TELE.fCount = 0; S.tp = true
         if TELE.conn then TELE.conn:Disconnect() end; TELE.lastStream = 0
+        -- Teleport-safe flag: same effect noclip creates so the game accepts repositioning.
+        pcall(function()
+            if efr and not efr:FindEffect("TPSafe") then
+                efr:CreateEffect("TPSafe")
+                TELE.tpSafeOwned = true
+            end
+        end)
         streamReq(loc.stream)
         TELE.conn = G.RS.RenderStepped:Connect(function()
             if not S.tp or not TELE.dest then TELE.stop(); return end
