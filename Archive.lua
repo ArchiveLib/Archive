@@ -1,7 +1,7 @@
 if not game:IsLoaded() then local t = 0; while not game:IsLoaded() and t < 20 do task.wait(0.1); t = t + 0.1 end end
 if type(shared.ArchiveCleanup) == "function" then pcall(shared.ArchiveCleanup) end
 
-local BUILD = "dev-build 1.0.55"
+local BUILD = "dev-build 1.0.56"
 
 local ARCHIVE_SETTINGS = {menu_kick = true}
 pcall(function()
@@ -5307,13 +5307,8 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
             abox.BackgroundTransparency = 1; abox.BorderSizePixel = 0
             G.mkC(abox, 2); G.mkS(abox, P.brd, 1, 0)
             if infoTip then
-                local iw = 110
-                pcall(function()
-                    local ts = game:GetService("TextService"):GetTextSize(title, 14, Enum.Font.GothamMedium, Vector2.new(500, 20)).X
-                    if ts and ts > 0 then iw = math.ceil(ts) + 12 end
-                end)
-                if iw < 20 then iw = 110 end
-                UI.info(f, iw, 3, infoTip)
+                -- Right-align just before the toggle box so it can never sit on the title text.
+                UI.info(f, -40, 3, infoTip)
             end
             local api = {root = f}
             local function paint(on)
@@ -5651,11 +5646,15 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
         local rows = {}
 
         local ft = block(g, 30)
+        local outline = G.new("Frame", ft)
+        outline.Position = G.UD2(0, 7, 0, 6); outline.Size = G.UD2(0, 16, 0, 16)
+        outline.BackgroundTransparency = 1; outline.BorderSizePixel = 0
+        G.mkC(outline, 4); G.mkS(outline, P.brd, 1, 0)
         local tgl = G.new("TextButton", ft)
-        tgl.Position = G.UD2(0, 8, 0, 7); tgl.Size = G.UD2(0, 14, 0, 14)
+        tgl.Position = G.UD2(0, 9, 0, 8); tgl.Size = G.UD2(0, 12, 0, 12)
         tgl.BackgroundTransparency = 1; tgl.BorderSizePixel = 0; tgl.AutoButtonColor = false
         tgl.Text = ""
-        G.mkC(tgl, 3); G.mkS(tgl, P.brd, 1, 0)
+        G.mkC(tgl, 3)
         G.mkL(ft, "enable auto load", 30, 6, 240, 16, 14, Enum.Font.GothamMedium, Enum.TextXAlignment.Left, P.tx)
         UI.info(ft, -12, 4, "Mapped configs load automatically on script start. 'Default' overrides all place rows.", nil, 300, 52)
         tgl.MouseButton1Click:Connect(function()
@@ -5694,7 +5693,7 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
             local on = AUTO.enabled
             tgl.BackgroundTransparency = on and 0 or 1
             tgl.BackgroundColor3 = on and P.amb or P.base
-            local st = tgl:FindFirstChildOfClass("UIStroke")
+            local st = outline:FindFirstChildOfClass("UIStroke")
             if st then st.Color = on and P.amb or P.brd end
             for key, dd in pairs(rows) do
                 local v = (key == "default") and AUTO.default or (AUTO.map[key] or "")
@@ -5994,6 +5993,8 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
             if sl.FpsVal then sl.FpsVal(CFG.FpsVal) end
             if sl.BrightVal then sl.BrightVal(CFG.BrightVal or 3) end
         end)
+        -- Slider refresh above only updates visuals; push the loaded cap to the executor too.
+        pcall(FPS.applyVal, CFG.FpsVal or 60)
         
         pcall(function()
             for i = 1, 3 do
@@ -6205,4 +6206,4 @@ shared.ArchiveCleanup = function()
     pcall(destroyOld)
     pcall(function() if FLY then FLY.dis() end end)
 end
--- build 1.0.55
+-- build 1.0.56
