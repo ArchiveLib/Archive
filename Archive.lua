@@ -1,9 +1,10 @@
 if not game:IsLoaded() then local t = 0; while not game:IsLoaded() and t < 20 do task.wait(0.1); t = t + 0.1 end end
 if type(shared.ArchiveCleanup) == "function" then pcall(shared.ArchiveCleanup) end
 
-local BUILD = "dev-build 1.0.52"
+local BUILD = "dev-build 1.0.54"
 local placeids = {
-    chime = 12522881268,
+    chime_lobby = 12522881268,
+    chime_arena = 6832944305,
     lobby = 4111023553,
     eastern = 6473861193,
     etrean = 6032399813,
@@ -11,7 +12,7 @@ local placeids = {
     dungeon = 8668476218
 }
 
-if game.PlaceId == placeids.chime then
+if game.PlaceId == placeids.chime_lobby then
     pcall(function()
         local pg = game.Players.LocalPlayer and game.Players.LocalPlayer:FindFirstChild("PlayerGui")
         if pg then for _, g in ipairs(pg:GetChildren()) do if g.Name == "ArchiveChimeHelper" then g:Destroy() end end end
@@ -573,8 +574,39 @@ do
             pcall(function() if not isfolder(G.CFGDIR) then makefolder(G.CFGDIR) end end)
         end
         local target = name and G.cfgPath(name) or CFG.File
-        local ok = pcall(function() writefile(target, G.HS:JSONEncode(G.snapshot())) end)
+        local ok = pcall(function()
+            local d = G.snapshot()
+            -- The default file is also the global settings file: keep the AUTO LOAD block.
+            if target == CFG.File and isfile and isfile(target) then
+                pcall(function()
+                    local old = G.HS:JSONDecode(readfile(target))
+                    if type(old) == "table" and type(old.autoload) == "table" then d.autoload = old.autoload end
+                end)
+            end
+            writefile(target, G.HS:JSONEncode(d))
+        end)
         return ok
+    end
+    function G.saveAutoLoad(data)
+        if type(writefile) ~= "function" or type(data) ~= "table" then return false end
+        return pcall(function()
+            local d = {}
+            if isfile and isfile(CFG.File) then
+                pcall(function()
+                    local old = G.HS:JSONDecode(readfile(CFG.File))
+                    if type(old) == "table" then d = old end
+                end)
+            end
+            d.autoload = data
+            writefile(CFG.File, G.HS:JSONEncode(d))
+        end)
+    end
+    function G.loadAutoLoad()
+        if type(readfile) ~= "function" or type(isfile) ~= "function" or not isfile(CFG.File) then return nil end
+        local d = nil
+        pcall(function() d = G.HS:JSONDecode(readfile(CFG.File)) end)
+        if type(d) ~= "table" or type(d.autoload) ~= "table" then return nil end
+        return d.autoload
     end
     function G.loadConfig(name, skipToggles)
         if type(readfile) ~= "function" or type(isfile) ~= "function" then return false end
@@ -865,6 +897,76 @@ end
     end
     function G.snap(v) return math.floor(v + 0.5) end
 end
+
+-- ===== AUTO LOAD: per-place config mappings (stored in Archive_config.json) =====
+local AUTO = {
+    enabled = true,
+    default = "",
+    map = {},
+    keys = {"etrean", "eastern", "depths", "dungeon", "chime_arena"},
+    labels = {etrean = "Etrean", eastern = "Eastern", depths = "Depths", dungeon = "Dungeon", chime_arena = "Chime"},
+    refresh = nil,
+}
+
+local function autoClean(v)
+    if type(v) ~= "string" then return "" end
+    v = string.match(v, "^%s*(.-)%s*$")
+    if v == "" or v:lower() == "none" then return "" end
+    return v
+end
+
+function AUTO.load()
+    local d = G.loadAutoLoad()
+    if not d then return end
+    AUTO.enabled = d.enabled ~= false
+    AUTO.default = autoClean(d.default)
+    AUTO.map = {}
+    if type(d.map) == "table" then
+        for _, k in ipairs(AUTO.keys) do AUTO.map[k] = autoClean(d.map[k]) end
+    end
+end
+
+function AUTO.save()
+    local data = {enabled = AUTO.enabled, default = AUTO.default, map = {}}
+    for _, k in ipairs(AUTO.keys) do data.map[k] = AUTO.map[k] or "" end
+    G.saveAutoLoad(data)
+end
+
+function AUTO.placeKey()
+    for k, id in pairs(placeids) do if game.PlaceId == id then return k end end
+    return nil
+end
+
+function AUTO.target()
+    if not AUTO.enabled then return nil, nil end
+    if AUTO.default ~= "" then return AUTO.default, "default" end
+    local k = AUTO.placeKey()
+    if not k then return nil, nil end
+    local v = AUTO.map[k]
+    if not v or v == "" then return nil, nil end
+    return v, AUTO.labels[k] or k
+end
+
+function AUTO.set(key, value)
+    value = autoClean(value)
+    if key == "default" then AUTO.default = value else AUTO.map[key] = value end
+    AUTO.save()
+    pcall(function() if AUTO.refresh then AUTO.refresh() end end)
+end
+
+function AUTO.scrub(name)
+    local changed = false
+    if name ~= "" and AUTO.default == name then AUTO.default = ""; changed = true end
+    for _, k in ipairs(AUTO.keys) do
+        if name ~= "" and AUTO.map[k] == name then AUTO.map[k] = ""; changed = true end
+    end
+    if changed then
+        AUTO.save()
+        pcall(function() if AUTO.refresh then AUTO.refresh() end end)
+    end
+end
+
+AUTO.load()
 
 local PC = {cache = {}, conns = {}, addC = nil, remC = nil}
 do
@@ -5440,7 +5542,7 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
     do
         local g = group("setup", "configs")
         local fDrop = block(g, 34)
-        local cfgDrop = UI.dropBlock(fDrop, 0, 0, 0, "select config", G.cfgList() or {}, nil, function(nm)
+        local cfgDrop = UI.dropBlock(fDrop, 0, 0, 0, "select config", function() return G.cfgList() or {} end, nil, function(nm)
             if UI._cfgInput then UI._cfgInput.Text = nm end
         end)
         UI.cfgDrop = cfgDrop
@@ -5453,6 +5555,8 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
         G.mkC(refreshBtn, 3); G.mkS(refreshBtn, P.brd, 1, 0)
         refreshBtn.MouseButton1Click:Connect(function()
             cfgDrop.fill(G.cfgList() or {}, nil)
+            if UI.qlDrop then pcall(function() UI.qlDrop.fill(G.cfgList() or {}, CFG.QuickLoad ~= "" and CFG.QuickLoad or nil) end) end
+            pcall(function() if AUTO.refresh then AUTO.refresh() end end)
         end)
         local f = block(g, 88)
         local name = G.new("TextBox", f)
@@ -5473,11 +5577,13 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
                     G.saveConfig(nm)
                     NOTIF.send("Archive", "overwrote " .. nm)
                     cfgDrop.fill(G.cfgList() or {}, nil)
+                    pcall(function() if AUTO.refresh then AUTO.refresh() end end)
                 end)
             else
                 G.saveConfig(nm)
                 NOTIF.send("Archive", "saved " .. nm)
                 cfgDrop.fill(G.cfgList() or {}, nil)
+                pcall(function() if AUTO.refresh then AUTO.refresh() end end)
             end
         end)
         do
@@ -5498,7 +5604,9 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
             local nm = string.match(name.Text, "^%s*(.-)%s*$")
             if nm == "" then return end
             G.deleteConfig(nm); NOTIF.send("Archive", "deleted " .. nm)
+            pcall(function() AUTO.scrub(nm) end)
             cfgDrop.fill(G.cfgList() or {}, nil); name.Text = ""
+            pcall(function() if AUTO.refresh then AUTO.refresh() end end)
         end)
         meta("cfgSave", "setup", "settings", "save new", "config")
         meta("cfgLoad", "setup", "settings", "load", "config")
@@ -5514,6 +5622,68 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
             NOTIF.send("Archive", "quick load set to " .. nm)
         end)
         UI.qlDrop = qlDrop
+    end
+    do
+        local g = group("setup", "auto load")
+        local currentKey = AUTO.placeKey()
+        local itemFn = function() return {"none", unpack(G.cfgList() or {})} end
+        local rows = {}
+
+        local ft = block(g, 30)
+        local tgl = G.new("TextButton", ft)
+        tgl.Position = G.UD2(0, 8, 0, 7); tgl.Size = G.UD2(0, 14, 0, 14)
+        tgl.BackgroundTransparency = 1; tgl.BorderSizePixel = 0; tgl.AutoButtonColor = false
+        G.mkC(tgl, 3); G.mkS(tgl, P.brd, 1, 0)
+        G.mkL(ft, "enable auto load", 30, 6, 240, 16, 14, Enum.Font.GothamMedium, Enum.TextXAlignment.Left, P.tx)
+        UI.info(ft, -12, 4, "Mapped configs load automatically on script start. 'Default' overrides all place rows.", nil, 300, 52)
+        tgl.MouseButton1Click:Connect(function()
+            AUTO.enabled = not AUTO.enabled
+            AUTO.save()
+            pcall(function() if AUTO.refresh then AUTO.refresh() end end)
+        end)
+
+        local function addRow(key, label)
+            local b = block(g, 24)
+            local now = (key ~= "default" and currentKey == key)
+            G.mkL(b, label .. (now and "   ● now" or ""), 8, 4, 146, 16, 12, Enum.Font.GothamMedium,
+                Enum.TextXAlignment.Left, now and P.amb or P.tx)
+            local holder = G.new("Frame", b)
+            holder.Position = G.UD2(0, 154, 0, 0); holder.Size = G.UD2(1, -162, 0, 24)
+            holder.BackgroundTransparency = 1; holder.BorderSizePixel = 0
+            rows[key] = UI.dropBlock(holder, 0, 0, 0, "", itemFn, function()
+                local v = (key == "default") and AUTO.default or (AUTO.map[key] or "")
+                return (v ~= "" and v) or "none"
+            end, function(nm) AUTO.set(key, nm) end)
+        end
+        addRow("default", "Default (anywhere)")
+        for _, k in ipairs(AUTO.keys) do addRow(k, AUTO.labels[k]) end
+
+        local fs = block(g, 20)
+        local status = G.mkL(fs, "", 8, 2, frameW() - 40, 16, 12, Enum.Font.GothamMedium, Enum.TextXAlignment.Left, P.mt)
+        local fa = block(g, 28)
+        UI.actBtn(fa, 8, 2, 0, 22, "load mapped config now", false, function()
+            local target = AUTO.target()
+            if not target then NOTIF.send("AUTO LOAD", "nothing mapped for this place"); return end
+            if G.loadConfig(target) then UI.applyLoaded(); NOTIF.send("AUTO LOAD", "loaded " .. target)
+            else NOTIF.send("AUTO LOAD", "missing config: " .. target, nil, true) end
+        end)
+
+        AUTO.refresh = function()
+            local on = AUTO.enabled
+            tgl.BackgroundTransparency = on and 0 or 1
+            tgl.BackgroundColor3 = on and P.amb or P.base
+            local st = tgl:FindFirstChildOfClass("UIStroke")
+            if st then st.Color = on and P.amb or P.brd end
+            for key, dd in pairs(rows) do
+                local v = (key == "default") and AUTO.default or (AUTO.map[key] or "")
+                dd.fill(itemFn(), (v ~= "" and v) or "none")
+            end
+            local target = AUTO.target()
+            status.Text = "will load: " .. (target or "nothing")
+                .. (AUTO.default ~= "" and "   (default overrides places)" or "")
+            status.TextColor3 = target and P.ok or P.mt
+        end
+        AUTO.refresh()
     end
     do
         local g = group("setup", "menu")
@@ -5948,6 +6118,18 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
 
     UI.bindInp()
     UI.applyV(); UI.updTog()
+    -- AUTO LOAD happens before the single applyLoaded below, so features start exactly once.
+    do
+        local target, where = AUTO.target()
+        if target then
+            if G.loadConfig(target) then
+                G._autoLoaded = target
+                NOTIF.send("AUTO LOAD", "loaded " .. target .. " · " .. (where or "place"))
+            else
+                NOTIF.send("AUTO LOAD", "missing config: " .. target, nil, true)
+            end
+        end
+    end
     pcall(UI.applyLoaded)
     if UI.dynConn then UI.dynConn:Disconnect() end
     UI.dynConn = G.RS.Heartbeat:Connect(function()
@@ -6001,4 +6183,4 @@ shared.ArchiveCleanup = function()
     pcall(destroyOld)
     pcall(function() if FLY then FLY.dis() end end)
 end
--- build 1.0.52
+-- build 1.0.54
