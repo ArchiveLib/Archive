@@ -1,7 +1,7 @@
 if not game:IsLoaded() then local t = 0; while not game:IsLoaded() and t < 20 do task.wait(0.1); t = t + 0.1 end end
 if type(shared.ArchiveCleanup) == "function" then pcall(shared.ArchiveCleanup) end
 
-local BUILD = "dev-build 1.0.51"
+local BUILD = "dev-build 1.0.52"
 local placeids = {
     chime = 12522881268,
     lobby = 4111023553
@@ -2337,6 +2337,16 @@ do
     function TELE.stop()
         S.tp = false; TELE.dest = nil; TELE.destName = nil
         if TELE.conn then TELE.conn:Disconnect(); TELE.conn = nil end
+        if TELE.tpSafeOwned then
+            TELE.tpSafeOwned = false
+            pcall(function()
+                if efr then
+                    for _, m in ipairs({"RemoveEffect", "DestroyEffect", "DeleteEffect", "StopEffect", "ClearEffect"}) do
+                        if type(efr[m]) == "function" then pcall(efr[m], efr, "TPSafe") end
+                    end
+                end
+            end)
+        end
     end
 end
 
