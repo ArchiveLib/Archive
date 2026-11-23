@@ -1,7 +1,16 @@
 if not game:IsLoaded() then local t = 0; while not game:IsLoaded() and t < 20 do task.wait(0.1); t = t + 0.1 end end
 if type(shared.ArchiveCleanup) == "function" then pcall(shared.ArchiveCleanup) end
 
-local BUILD = "dev-build 1.0.54"
+local BUILD = "dev-build 1.0.55"
+
+-- Optional settings can be set before the loadstring, e.g. settings.menu_kick = false
+local ARCHIVE_SETTINGS = {menu_kick = true}
+pcall(function()
+    if type(settings) == "table" and settings.menu_kick ~= nil then
+        ARCHIVE_SETTINGS.menu_kick = settings.menu_kick == true
+    end
+end)
+
 local placeids = {
     chime_lobby = 12522881268,
     chime_arena = 6832944305,
@@ -391,8 +400,21 @@ if game.PlaceId == placeids.chime_lobby then
     G.SG:SetCore("SendNotification", {Title = "Archive Chime Helper", Text = "Loaded", Duration = 3})
     return
 elseif game.PlaceId == placeids.lobby then
-    local player = game.Players.LocalPlayer
-    player:Kick("Script does not support the main lobby")
+    if ARCHIVE_SETTINGS.menu_kick then
+        pcall(function()
+            local player = game.Players.LocalPlayer
+            if player then player:Kick("Script does not support the main lobby") end
+        end)
+    else
+        pcall(function()
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Archive",
+                Text = "Loaded · menu detected · script not started",
+                Duration = 4,
+            })
+        end)
+    end
+    return
 end
 
 local G = {}
@@ -5633,6 +5655,7 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
         local tgl = G.new("TextButton", ft)
         tgl.Position = G.UD2(0, 8, 0, 7); tgl.Size = G.UD2(0, 14, 0, 14)
         tgl.BackgroundTransparency = 1; tgl.BorderSizePixel = 0; tgl.AutoButtonColor = false
+        tgl.Text = ""
         G.mkC(tgl, 3); G.mkS(tgl, P.brd, 1, 0)
         G.mkL(ft, "enable auto load", 30, 6, 240, 16, 14, Enum.Font.GothamMedium, Enum.TextXAlignment.Left, P.tx)
         UI.info(ft, -12, 4, "Mapped configs load automatically on script start. 'Default' overrides all place rows.", nil, 300, 52)
@@ -6183,4 +6206,4 @@ shared.ArchiveCleanup = function()
     pcall(destroyOld)
     pcall(function() if FLY then FLY.dis() end end)
 end
--- build 1.0.54
+-- build 1.0.55
