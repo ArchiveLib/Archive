@@ -1,7 +1,7 @@
 if not game:IsLoaded() then local t = 0; while not game:IsLoaded() and t < 20 do task.wait(0.1); t = t + 0.1 end end
 if type(shared.ArchiveCleanup) == "function" then pcall(shared.ArchiveCleanup) end
 
-local BUILD = "dev-build 1.0.50"
+local BUILD = "dev-build 1.0.51"
 local placeids = {
     chime = 12522881268,
     lobby = 4111023553
@@ -4643,6 +4643,7 @@ local function createMenu()
     local TABS = {
         {id = "combat", label = "Combat"}, {id = "visual", label = "Visuals"},
         {id = "move", label = "Move"}, {id = "game", label = "Game"},
+        {id = "auto", label = "Automation"},
 
         {id = "util", label = "Utility"}, {id = "setup", label = "Settings"},
     }
@@ -5979,4 +5980,4 @@ shared.ArchiveCleanup = function()
     pcall(destroyOld)
     pcall(function() if FLY then FLY.dis() end end)
 end
--- build 1.0.50
+-- build 1.0.51
