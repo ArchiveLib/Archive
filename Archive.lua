@@ -1,7 +1,7 @@
 if not game:IsLoaded() then local t = 0; while not game:IsLoaded() and t < 20 do task.wait(0.1); t = t + 0.1 end end
 if type(shared.ArchiveCleanup) == "function" then pcall(shared.ArchiveCleanup) end
 
-local BUILD = "dev-build 1.0.56"
+local BUILD = "dev-build 1.0.57"
 
 local ARCHIVE_SETTINGS = {menu_kick = true}
 pcall(function()
@@ -5646,16 +5646,15 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
         local rows = {}
 
         local ft = block(g, 30)
-        local outline = G.new("Frame", ft)
-        outline.Position = G.UD2(0, 7, 0, 6); outline.Size = G.UD2(0, 16, 0, 16)
-        outline.BackgroundTransparency = 1; outline.BorderSizePixel = 0
-        G.mkC(outline, 4); G.mkS(outline, P.brd, 1, 0)
         local tgl = G.new("TextButton", ft)
-        tgl.Position = G.UD2(0, 9, 0, 8); tgl.Size = G.UD2(0, 12, 0, 12)
+        tgl.Position = G.UD2(0, 4, 0, 3); tgl.Size = G.UD2(0, 24, 0, 24)
         tgl.BackgroundTransparency = 1; tgl.BorderSizePixel = 0; tgl.AutoButtonColor = false
         tgl.Text = ""
-        G.mkC(tgl, 3)
-        G.mkL(ft, "enable auto load", 30, 6, 240, 16, 14, Enum.Font.GothamMedium, Enum.TextXAlignment.Left, P.tx)
+        local box = G.new("Frame", tgl)
+        box.Size = G.UD2(0, 14, 0, 14); box.Position = G.UD2(0, 5, 0, 5)
+        box.BackgroundTransparency = 1; box.BorderSizePixel = 0
+        G.mkC(box, 2); G.mkS(box, P.brd, 1, 0)
+        G.mkL(ft, "enable auto load", 34, 6, 240, 16, 14, Enum.Font.GothamMedium, Enum.TextXAlignment.Left, P.tx)
         UI.info(ft, -12, 4, "Mapped configs load automatically on script start. 'Default' overrides all place rows.", nil, 300, 52)
         tgl.MouseButton1Click:Connect(function()
             AUTO.enabled = not AUTO.enabled
@@ -5691,9 +5690,9 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
 
         AUTO.refresh = function()
             local on = AUTO.enabled
-            tgl.BackgroundTransparency = on and 0 or 1
-            tgl.BackgroundColor3 = on and P.amb or P.base
-            local st = outline:FindFirstChildOfClass("UIStroke")
+            box.BackgroundTransparency = on and 0 or 1
+            box.BackgroundColor3 = on and P.amb or P.base
+            local st = box:FindFirstChildOfClass("UIStroke")
             if st then st.Color = on and P.amb or P.brd end
             for key, dd in pairs(rows) do
                 local v = (key == "default") and AUTO.default or (AUTO.map[key] or "")
@@ -6206,4 +6205,4 @@ shared.ArchiveCleanup = function()
     pcall(destroyOld)
     pcall(function() if FLY then FLY.dis() end end)
 end
--- build 1.0.56
+-- build 1.0.57
