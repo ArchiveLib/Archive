@@ -4,7 +4,10 @@ if type(shared.ArchiveCleanup) == "function" then pcall(shared.ArchiveCleanup) e
 local BUILD = "dev-build 1.0.52"
 local placeids = {
     chime = 12522881268,
-    lobby = 4111023553
+    lobby = 4111023553,
+    eastern = 6473861193,
+    etrean = 6032399813,
+    depths = 5735553160
 }
 
 if game.PlaceId == placeids.chime then
