@@ -1,7 +1,7 @@
 if not game:IsLoaded() then local t = 0; while not game:IsLoaded() and t < 20 do task.wait(0.1); t = t + 0.1 end end
 if type(shared.ArchiveCleanup) == "function" then pcall(shared.ArchiveCleanup) end
 
-local BUILD = "dev-build 1.0.49"
+local BUILD = "dev-build 1.0.50"
 local placeids = {
     chime = 12522881268,
     lobby = 4111023553
@@ -468,19 +468,18 @@ local S = {
     mobEsp = false, nEsp = false, cEsp = false,
     autoloot = false, spec = false, specRobloxNames = false,
     agil = false, agSpd = false, nc = false, nfd = false, fly = false,
-    aSpd = false, mSpd = false, noVis = false, opt = false, fps = false,
+    aSpd = false, mSpd = false, noVis = false, fps = false,
     nkb = false, npcFreeze = false,
-    modDetector = false, modSound = false, modRepeat = true,
+    modDetector = false, modRepeat = true,
     tp = false,
     humanoidPathfindBreaker = false, attachToBack = false,
     effDisable = false, effHunger = true, effUnderwater = true, effSanity = true,
     sanityHud = false, bright = false,
     kbHud = false, showChat = false,
     autoBuild = false, autoPoints = false,
-    gourd = false,
 }
 local kb = {}
-local KB_KEYS = {"pktPlk","esp","espBox","espLvl","espHp","htnl","espGlobal","mobEsp","nEsp","cEsp","autoloot","spec","specRobloxNames","agil","agSpd","mSpd","nc","nfd","fly","aSpd","opt","fps","nkb","npcFreeze","modDetector","humanoidPathfindBreaker","attachToBack","effDisable","sanityHud","bright","kbHud","showChat","autoBuild","autoPoints","gourd","m1","m2","m3","menuKey"}
+local KB_KEYS = {"pktPlk","esp","espBox","espLvl","espHp","htnl","espGlobal","mobEsp","nEsp","cEsp","autoloot","spec","specRobloxNames","agil","agSpd","mSpd","nc","nfd","fly","aSpd","fps","nkb","npcFreeze","modDetector","humanoidPathfindBreaker","attachToBack","effDisable","sanityHud","bright","kbHud","showChat","autoBuild","autoPoints","m1","m2","m3","menuKey"}
 kb.menuKey = Enum.KeyCode.P
 
 local UI = {}; UI.espF = {}; UI._curTab = "combat"
@@ -532,11 +531,10 @@ do
         elseif CFG.KbHudPos then
             d.kbHudPos = CFG.KbHudPos
         end
-        if CFG.GourdHudPos then d.gourdHudPos = CFG.GourdHudPos end
         local TOGS = {"pktPlk", "esp", "espGlobal", "espBox", "espLvl", "espHp", "htnl", "mobEsp", "nEsp", "cEsp",
-            "autoloot", "spec", "specRobloxNames", "agil", "agSpd", "nc", "nfd", "fly", "aSpd", "mSpd", "noVis", "opt", "fps",
-            "nkb", "npcFreeze", "modDetector", "modSound", "modRepeat", "humanoidPathfindBreaker", "attachToBack", "effDisable", "effHunger",
-            "effUnderwater", "effSanity", "sanityHud", "bright", "kbHud", "showChat", "autoBuild", "autoPoints", "gourd"}
+            "autoloot", "spec", "specRobloxNames", "agil", "agSpd", "nc", "nfd", "fly", "aSpd", "mSpd", "noVis", "fps",
+            "nkb", "npcFreeze", "modDetector", "modRepeat", "humanoidPathfindBreaker", "attachToBack", "effDisable", "effHunger",
+            "effUnderwater", "effSanity", "sanityHud", "bright", "kbHud", "showChat", "autoBuild", "autoPoints"}
         for _, k in ipairs(TOGS) do
             d.toggles[k] = S[k]
         end
@@ -560,7 +558,6 @@ do
         if d.PKTMode then CFG.PKTMode = d.PKTMode end
         if d.autoBuildUrl ~= nil then CFG.AutoBuildUrl = tostring(d.autoBuildUrl) end
         if d.kbHudPos and type(d.kbHudPos) == "table" then CFG.KbHudPos = d.kbHudPos end
-        if d.gourdHudPos and type(d.gourdHudPos) == "table" then CFG.GourdHudPos = d.gourdHudPos end
         if d.toggles and not skipToggles then for k, v in pairs(d.toggles) do if S[k] ~= nil then S[k] = v end end end
         pcall(function() if UI and UI._sliders then for k, fn in pairs(UI._sliders) do if CFG[k] ~= nil then fn(CFG[k]) end end end end)
         pcall(function() if UI and UI.updTog then UI.updTog() end end)
@@ -1426,14 +1423,6 @@ do
                         if due then
                             MODD.told[p], MODD.lastTell[p] = true, now
                             NOTIF.send("MOD DETECTED", p.Name .. " · " .. role, 20, true)
-                            if S.modSound then
-                                pcall(function()
-                                    local s = G.new("Sound", G.getHP())
-                                    s.SoundId = "rbxassetid://1005211806"; s.Volume = 0.5
-                                    s:Play()
-                                    G.ts(function() G.tw(3); pcall(function() s:Destroy() end) end)
-                                end)
-                            end
                         end
                     end
                 end
@@ -2004,76 +1993,6 @@ do
         pcall(function() if UI and UI.rows and UI.rows.fps and UI.rows.fps.chip then UI.rows.fps.chip() end end)
     end
 end
-
-local OPTIMIZE = {active = false, conn = nil, conn2 = nil}
-do
-    local function lite(root)
-        local n = 0
-        for _, v in ipairs(root:GetDescendants()) do
-            if not OPTIMIZE.active then break end
-            pcall(function()
-                if v:IsA("BasePart") and not v:IsA("Terrain") then
-                    if v.CastShadow ~= false then v.CastShadow = false end
-                    if v.Material ~= Enum.Material.SmoothPlastic then v.Material = Enum.Material.SmoothPlastic end
-                    if v.Reflectance ~= 0 then v.Reflectance = 0 end
-                    if v:IsA("MeshPart") and v.TextureID ~= "" then v.TextureID = "" end
-                elseif v:IsA("SpecialMesh") then
-                    if v.TextureId ~= "" then v.TextureId = "" end
-                elseif v:IsA("Decal") or v:IsA("Texture") then v:Destroy()
-                elseif v:IsA("ParticleEmitter") then v.Rate = math.clamp(v.Rate * 0.1, 0, 5)
-                elseif v:IsA("Trail") or v:IsA("Beam") then v.Enabled = false
-                elseif v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then v.Enabled = false
-                elseif v:IsA("PointLight") or v:IsA("SpotLight") then
-                    if v.Parent and not v.Parent:FindFirstChildOfClass("Humanoid") then
-                        v.Range = math.min(v.Range, 8); v.Brightness = math.min(v.Brightness, 0.5)
-                    end
-                end
-            end)
-            n = n + 1; if n % 600 == 0 then task.wait() end
-        end
-    end
-    local function dark()
-        pcall(function()
-            local L = game:GetService("Lighting")
-            L.GlobalShadows = false; L.Brightness = 0
-            L.EnvironmentDiffuseScale = 0; L.EnvironmentSpecularScale = 0
-            for _, v in ipairs(L:GetChildren()) do
-                if v:IsA("PostEffect") or v:IsA("Atmosphere") then v.Enabled = false end
-            end
-            local T = G.WS.Terrain
-            if T then T.WaterWaveSize, T.WaterWaveSpeed, T.WaterReflectance, T.WaterTransparency, T.Decoration = 0, 0, 0, 1, false end
-        end)
-    end
-    local function onNew(v)
-        if not OPTIMIZE.active then return end
-        pcall(function()
-            if v:IsA("ParticleEmitter") then v.Rate = math.clamp(v.Rate * 0.1, 0, 5)
-            elseif v:IsA("BasePart") and not v:IsA("Terrain") then
-                if v.CastShadow ~= false then v.CastShadow = false end
-                if v.Material ~= Enum.Material.SmoothPlastic then v.Material = Enum.Material.SmoothPlastic end
-            elseif v:IsA("Decal") or v:IsA("Texture") then v:Destroy()
-            elseif v:IsA("Trail") or v:IsA("Beam") then v.Enabled = false
-            elseif v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then v.Enabled = false
-            elseif v:IsA("PostEffect") or v:IsA("Atmosphere") then v.Enabled = false end
-        end)
-    end
-    function OPTIMIZE.en()
-        if OPTIMIZE.active then return end; OPTIMIZE.active = true
-        dark()
-        G.ts(function() lite(G.WS) end)
-        G.ts(function() pcall(function() lite(G.RepS) end) end)
-        OPTIMIZE.conn = G.WS.DescendantAdded:Connect(onNew)
-        OPTIMIZE.conn2 = game:GetService("Lighting").ChildAdded:Connect(function(v)
-            if OPTIMIZE.active then pcall(function() if v:IsA("PostEffect") or v:IsA("Atmosphere") then v.Enabled = false end end) end
-        end)
-    end
-    function OPTIMIZE.dis()
-        OPTIMIZE.active = false
-        if OPTIMIZE.conn then OPTIMIZE.conn:Disconnect(); OPTIMIZE.conn = nil end
-        if OPTIMIZE.conn2 then OPTIMIZE.conn2:Disconnect(); OPTIMIZE.conn2 = nil end
-    end
-end
-
 
 local NKB = {active = false, saved = {}, fakers = {}, conns = {}}
 do
@@ -3791,13 +3710,13 @@ do
         specRobloxNames = "View Roblox Names", autoloot = "Auto Loot",
         agil = "Agility + Speed", agSpd = "Speed Bonus", mSpd = "Mantra Speed",
         nc = "No-Clip", nfd = "No Fall Damage", fly = "Fly", aSpd = "Anim Speed",
-        opt = "Super Optimize", fps = "FPS Limiter", nkb = "No Kill Bricks",
+        fps = "FPS Limiter", nkb = "No Kill Bricks",
         npcFreeze = "NPC Freezer", modDetector = "Mod Detector",
         humanoidPathfindBreaker = "Pathfind Breaker", attachToBack = "Attach To Back",
         effDisable = "Effect Disabler", sanityHud = "Sanity HUD", bright = "Full bright", noVis = "Fog Disabler", showChat = "Show Chat", kbHud = "Keybinds",
         autoBuild = "Auto Builder", autoPoints = "Stat Spender",
     }
-    local ORDER = {"pktPlk","esp","espBox","espLvl","espHp","htnl","espGlobal","mobEsp","nEsp","cEsp","spec","specRobloxNames","autoloot","agil","agSpd","mSpd","nc","nfd","fly","aSpd","opt","fps","nkb","npcFreeze","modDetector","humanoidPathfindBreaker","attachToBack","effDisable","sanityHud","bright","noVis","showChat","autoBuild","autoPoints"}
+    local ORDER = {"pktPlk","esp","espBox","espLvl","espHp","htnl","espGlobal","mobEsp","nEsp","cEsp","spec","specRobloxNames","autoloot","agil","agSpd","mSpd","nc","nfd","fly","aSpd","fps","nkb","npcFreeze","modDetector","humanoidPathfindBreaker","attachToBack","effDisable","sanityHud","bright","noVis","showChat","autoBuild","autoPoints"}
     local function rebuild()
         if not KBHUD.list then return end
         for _, r in pairs(KBHUD.rows) do pcall(function() r.row:Destroy() end) end
@@ -3910,511 +3829,6 @@ do
 end
 
 
-local HALLOW_PLACE = 8668476218
-local GOURD = {running = false, token = nil, conns = {}, idle = 0, lastShrine = 0, lastLoot = 0, lastLootRun = 0, ncOwn = false}
-do
-    local SHRINE = G.V3(-16752.7832, 59, 12144.7754)
-    local SAFE = G.V3(-16759.3, 65.7, 12240.1)
-    local HOVER, HOLD, SWING, MOB_T = 15, 1.5, 0.9, 30
-    local TRAVEL_T, ARRIVE, ARENA = 8, 1.5, 400
-    local CHEST_H, CHEST_IDLE, CHEST_T, CHEST_RETRY, LOOT_COOL = 3, 15, 4, 25, 0.2
-    local SHRINE_IDLE, SHRINE_COOL = 20, 15
-
-    local function fmt(sec)
-        local s = math.max(0, math.floor(sec))
-        return string.format("%02d:%02d", math.floor(s / 60), s % 60)
-    end
-
-    local function hudMake()
-        if GOURD.hud and GOURD.hud.Parent then return GOURD.hud end
-        local sg = G.new("ScreenGui")
-        sg.Name = "ArchiveGourd"; sg.ResetOnSpawn = false; sg.IgnoreGuiInset = true
-        sg.DisplayOrder = 999; sg:SetAttribute("KI", true)
-        G.protG(sg); sg.Parent = G.getHP()
-        local f = G.new("Frame", sg)
-        f.Name = "Panel"; f.Size = G.UD2(0, 236, 0, 74)
-        local p = CFG.GourdHudPos
-        if type(p) == "table" and p.sx ~= nil then
-            f.Position = G.UD2(p.sx, p.ox or 20, p.sy, p.oy or 130)
-        else
-            f.Position = G.UD2(0, 20, 0, 130)
-        end
-        f.BackgroundColor3 = P.base; f.BackgroundTransparency = 0.1; f.BorderSizePixel = 0
-        f.Active = true; f.ClipsDescendants = true
-        G.mkC(f, 6); G.mkS(f, P.amb, 1, 0.55)
-        G.mkL(f, "HALLOWTIDE", 10, 6, 120, 14, 12, Enum.Font.GothamBold, Enum.TextXAlignment.Left, P.amb)
-        local tot = G.mkL(f, "00:00", 0, 6, 90, 14, 12, Enum.Font.GothamBold, Enum.TextXAlignment.Right, P.mt)
-        tot.Position = G.UD2(1, -100, 0, 6); tot.Size = G.UD2(0, 90, 0, 14)
-        local tl = G.mkL(f, "starting", 10, 26, 216, 18, 12, Enum.Font.Gotham, Enum.TextXAlignment.Left, P.tx)
-        tl.TextTruncate = Enum.TextTruncate.AtEnd
-        local bar = G.new("Frame", f)
-        bar.Position = G.UD2(0, 10, 0, 50); bar.Size = G.UD2(1, -20, 0, 1)
-        bar.BackgroundColor3 = P.amb; bar.BackgroundTransparency = 0.8; bar.BorderSizePixel = 0
-        local sub = G.mkL(f, "task 00:00", 10, 54, 216, 14, 12, Enum.Font.Gotham, Enum.TextXAlignment.Left, P.mt)
-        GOURD.hud, GOURD.frame, GOURD.taskL, GOURD.timeL, GOURD.totalL = sg, f, tl, sub, tot
-        GOURD.taskStart, GOURD.totalStart = G.ck(), G.ck()
-        local drag, ds, fp = false, nil, nil
-        f.InputBegan:Connect(function(i)
-            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-                drag, ds, fp = true, i.Position, f.Position
-            end
-        end)
-        G.ti(GOURD.conns, G.UIS.InputChanged:Connect(function(i)
-            if not drag or not ds or not fp then return end
-            if i.UserInputType ~= Enum.UserInputType.MouseMovement and i.UserInputType ~= Enum.UserInputType.Touch then return end
-            local d = i.Position - ds
-            f.Position = G.UD2(fp.X.Scale, math.floor(fp.X.Offset + d.X), fp.Y.Scale, math.floor(fp.Y.Offset + d.Y))
-        end))
-        G.ti(GOURD.conns, G.UIS.InputEnded:Connect(function(i)
-            if i.UserInputType ~= Enum.UserInputType.MouseButton1 and i.UserInputType ~= Enum.UserInputType.Touch then return end
-            if not drag then return end
-            drag = false
-            local q = f.Position
-            CFG.GourdHudPos = {sx = q.X.Scale, ox = math.floor(q.X.Offset), sy = q.Y.Scale, oy = math.floor(q.Y.Offset)}
-        end))
-        G.ti(GOURD.conns, G.RS.Heartbeat:Connect(function()
-            if not GOURD.hud or not GOURD.hud.Parent then return end
-            GOURD.totalL.Text = fmt(G.ck() - GOURD.totalStart)
-            GOURD.timeL.Text = "task " .. fmt(G.ck() - GOURD.taskStart)
-        end))
-        return sg
-    end
-
-    local function hudKill()
-        for _, c in ipairs(GOURD.conns) do pcall(function() c:Disconnect() end) end
-        G.tc(GOURD.conns)
-        if GOURD.hud then pcall(function() GOURD.hud:Destroy() end) end
-        GOURD.hud, GOURD.frame, GOURD.taskL, GOURD.timeL, GOURD.totalL = nil, nil, nil, nil, nil
-    end
-
-    local function setTask(text, group)
-        GOURD.taskText = text
-        if not GOURD.hud or not GOURD.hud.Parent then hudMake() end
-        if not GOURD.taskL then return end
-        local g = group or text
-        if GOURD.group ~= g then GOURD.group, GOURD.taskStart = g, G.ck() end
-        if GOURD.taskL.Text ~= text then GOURD.taskL.Text = text end
-    end
-
-    local function refs()
-        local hrp, hum = G.myR(), G.myH()
-        if not hrp or not hum then return false end
-        GOURD.hrp, GOURD.hum, GOURD.cam = hrp, hum, G.WS.CurrentCamera
-        return true
-    end
-    local function dead()
-        local hum = G.myH()
-        return hum == nil or hum.Health <= 0
-    end
-    local function waitChar()
-        while GOURD.running do
-            if refs() then return true end
-            G.tw(0.5)
-        end
-        return false
-    end
-    local function waitRespawn()
-        while GOURD.running and dead() do G.tw(0.5); refs() end
-        return refs()
-    end
-
-    local function pin(goalOf, stopOf, maxT)
-        if not GOURD.running or not refs() then return false end
-        local conn
-        conn = G.RS.Heartbeat:Connect(function(dt)
-            local hrp = GOURD.hrp
-            if not GOURD.running or not hrp or not hrp.Parent then conn:Disconnect(); return end
-            local goal = goalOf()
-            if not goal then return end
-            local delta = goal - hrp.Position
-            local dist = delta.Magnitude
-            if dist > 0.1 then hrp.CFrame = hrp.CFrame + delta.Unit * G.mc(dist * 8, 0, 120) * dt end
-            hrp.Velocity = G.V3(0, 0, 0)
-            if GOURD.cam then GOURD.cam.CFrame = G.CF(hrp.Position, G.V3(goal.X, goal.Y - HOVER, goal.Z)) end
-        end)
-        local t0, ok = G.ck(), false
-        while GOURD.running and (G.ck() - t0) < maxT do
-            if stopOf and stopOf() then ok = true; break end
-            G.tw()
-        end
-        conn:Disconnect()
-        return ok
-    end
-    local function travel(pos, maxT)
-        return pin(function() return pos end, function()
-            local hrp = GOURD.hrp
-            return hrp ~= nil and hrp.Parent ~= nil and (hrp.Position - pos).Magnitude <= ARRIVE
-        end, maxT or TRAVEL_T)
-    end
-    local function hover(goalOf, dur) return pin(goalOf, nil, dur) end
-    local function inArena()
-        local hrp = GOURD.hrp
-        return hrp ~= nil and (hrp.Position - SAFE).Magnitude < ARENA
-    end
-
-    local function mobAlive(m)
-        if not m or not m.Parent then return false end
-        local hum = m:FindFirstChildOfClass("Humanoid")
-        return hum ~= nil and hum.Health > 0 and m:FindFirstChild("HumanoidRootPart") ~= nil
-    end
-    local function mobs()
-        local list, live = {}, G.WS:FindFirstChild("Live")
-        if not live then return list end
-        for _, m in ipairs(live:GetChildren()) do
-            if m:IsA("Model") and string.find(string.lower(m.Name), "pumpskipper", 1, true) and mobAlive(m) then
-                G.ti(list, m)
-            end
-        end
-        table.sort(list, function(a, b)
-            local pa, pb = a:FindFirstChild("HumanoidRootPart"), b:FindFirstChild("HumanoidRootPart")
-            if not pa or not pb then return false end
-            return (pa.Position - SAFE).Magnitude < (pb.Position - SAFE).Magnitude
-        end)
-        return list
-    end
-
-    local function promptText()
-        local pg = G.LP and G.LP:FindFirstChild("PlayerGui")
-        local sp = pg and pg:FindFirstChild("SimplePrompt")
-        if not sp then return "" end
-        local parts = {}
-        for _, d in ipairs(sp:GetDescendants()) do
-            if d:IsA("TextLabel") and d.Text ~= "" then G.ti(parts, d.Text) end
-        end
-        return string.lower(table.concat(parts, " | "))
-    end
-    local function blocked()
-        local t = promptText()
-        if t == "" then return false end
-        for _, w in ipairs({"recover", "wave", "stir", "survive", "remain"}) do
-            if string.find(t, w, 1, true) then return true end
-        end
-        return false
-    end
-    local function shrine()
-        local hw = G.WS:FindFirstChild("HallowtideWaves")
-        local a = hw and hw:FindFirstChild("HallowtideShrine")
-        if a then return a end
-        local th = G.WS:FindFirstChild("Thrown")
-        return th and th:FindFirstChild("HallowtideShrine")
-    end
-    local function fireShrine()
-        local sh = shrine()
-        if not sh then return false end
-        local pp = sh:FindFirstChild("InteractPrompt")
-        if not (pp and pp:IsA("ProximityPrompt")) then
-            pp = nil
-            for _, d in ipairs(sh:GetDescendants()) do
-                if d:IsA("ProximityPrompt") then pp = d; break end
-            end
-        end
-        if not pp then return false end
-        pcall(fireproximityprompt, pp)
-        return true
-    end
-
-    local function chestPos(c)
-        local r = c and c:FindFirstChild("RootPart")
-        if r then return r.Position end
-        if c and c:IsA("Model") then
-            local ok, p = pcall(function() return c:GetPivot().Position end)
-            if ok then return p end
-        end
-        return nil
-    end
-    local function isChest(m)
-        return m:IsA("Model")
-            and m.Name ~= "HallowtideShrine"
-            and not string.find(string.lower(m.Name), "pumpskipper", 1, true)
-            and m:FindFirstChildOfClass("Humanoid") == nil
-            and m:FindFirstChild("RootPart") ~= nil
-    end
-    local function chests()
-        local out, seen = {}, {}
-        local function scan(par, depth)
-            if not par then return end
-            for _, c in ipairs(par:GetChildren()) do
-                if not seen[c] then
-                    if c:IsA("Model") and isChest(c) then
-                        seen[c] = true
-                        local p = chestPos(c)
-                        if p and (p - SAFE).Magnitude < ARENA * 3 then G.ti(out, c) end
-                    elseif depth > 0 and c:IsA("Model") then
-                        scan(c, depth - 1)
-                    end
-                end
-            end
-        end
-        scan(G.WS:FindFirstChild("Chests"), 1)
-        scan(G.WS:FindFirstChild("Thrown"), 1)
-        table.sort(out, function(a, b)
-            local pa, pb = chestPos(a), chestPos(b)
-            if not pa or not pb then return false end
-            return (pa - SAFE).Magnitude < (pb - SAFE).Magnitude
-        end)
-        return out
-    end
-    local function chestPrompt(c)
-        local pp = c:FindFirstChild("InteractPrompt")
-        if pp and pp:IsA("ProximityPrompt") then return pp end
-        for _, d in ipairs(c:GetDescendants()) do
-            if d:IsA("ProximityPrompt") then return d end
-        end
-        return nil
-    end
-    local function choicePrompt()
-        local pg = G.LP and G.LP:FindFirstChild("PlayerGui")
-        if not pg then return nil end
-        for _, d in ipairs(pg:GetDescendants()) do
-            if d.Name == "ChoicePrompt" and d:FindFirstChild("ChoiceFrame") and d:FindFirstChild("Choice") then return d end
-        end
-        return nil
-    end
-    local function fireLoot()
-        if (G.ck() - GOURD.lastLoot) < LOOT_COOL then return false end
-        local cp = choicePrompt()
-        local r = cp and cp:FindFirstChild("Choice")
-        if not (r and r:IsA("RemoteEvent")) then return false end
-        GOURD.lastLoot = G.ck()
-        pcall(function() r:FireServer("LOOT_ALL") end)
-        return true
-    end
-
-    local function swing()
-        if type(mouse1click) == "function" then pcall(mouse1click); return true end
-        if G.VIM then
-            local vp = GOURD.cam and GOURD.cam.ViewportSize or G.V2(960, 540)
-            local cx, cy = math.floor(vp.X / 2), math.floor(vp.Y / 2)
-            pcall(function()
-                G.VIM:SendMouseButtonEvent(cx, cy, 0, true, game, 1)
-                G.VIM:SendMouseButtonEvent(cx, cy, 0, false, game, 1)
-            end)
-            return true
-        end
-        return false
-    end
-
-    local function killMob(m)
-        if not m then return end
-        local t0 = G.ck()
-        while GOURD.running and mobAlive(m) do
-            if (G.ck() - t0) > MOB_T then return end
-            if dead() then
-                setTask("waiting respawn")
-                if not waitRespawn() then return end
-                travel(SAFE, TRAVEL_T)
-            else
-                local function goalOf()
-                    local r = m:FindFirstChild("HumanoidRootPart")
-                    if r and mobAlive(m) then return r.Position + G.V3(0, HOVER, 0) end
-                    return nil
-                end
-                local arrived = pin(goalOf, function()
-                    local r, g = G.myR(), goalOf()
-                    return r ~= nil and g ~= nil and (r.Position - g).Magnitude <= ARRIVE * 2
-                end, TRAVEL_T)
-                if not GOURD.running then return end
-                if not mobAlive(m) then break end
-                if not arrived then
-                    G.tw(0.2)
-                else
-                    hover(goalOf, HOLD)
-                    if not GOURD.running then return end
-                    if mobAlive(m) and not dead() and refs() then swing() end
-                    hover(goalOf, SWING)
-                end
-            end
-            GOURD.idle = 0
-        end
-        if not mobAlive(m) then GOURD.idle = 0 end
-    end
-
-    local function clearWave()
-        while GOURD.running do
-            local list = mobs()
-            if #list == 0 then return end
-            for i, m in ipairs(list) do
-                if not GOURD.running then return end
-                if mobAlive(m) then
-                    setTask("killing gourdskippers " .. i .. "/" .. #list, "killing")
-                    killMob(m)
-                end
-            end
-        end
-    end
-
-    local function lootOne(c)
-        if not c or not c.Parent then return false end
-        local function goalOf()
-            local p = chestPos(c)
-            if p then return p + G.V3(0, CHEST_H, 0) end
-            return nil
-        end
-        local start = goalOf()
-        if not start then return false end
-        travel(start, TRAVEL_T)
-        if not GOURD.running then return false end
-        local t0, lastP = G.ck(), 0
-        while GOURD.running and (G.ck() - t0) < CHEST_T do
-            if not c.Parent then return true end
-            if fireLoot() then
-                local t1 = G.ck()
-                while GOURD.running and (G.ck() - t1) < 1 and choicePrompt() do hover(goalOf, 0.2) end
-                return true
-            end
-            local pp = chestPrompt(c)
-            if pp and (G.ck() - lastP) > 0.4 then
-                lastP = G.ck()
-                pcall(fireproximityprompt, pp)
-            end
-            hover(goalOf, 0.3)
-            if #mobs() > 0 then return false end
-        end
-        return false
-    end
-
-    local function lootAll()
-        local list = chests()
-        if #list == 0 then GOURD.idle, GOURD.lastLootRun = 0, G.ck(); return 0 end
-        local done = 0
-        for i, c in ipairs(list) do
-            if not GOURD.running then break end
-            if #mobs() > 0 then break end
-            if c.Parent then
-                setTask("looting chests " .. i .. "/" .. #list, "looting")
-                if lootOne(c) then done = done + 1 end
-            end
-        end
-        if GOURD.running then setTask("returning to safe"); travel(SAFE, TRAVEL_T) end
-        GOURD.lastLootRun, GOURD.idle = G.ck(), 0
-        if done > 0 then
-            NOTIF.send("Hallowtide", "looted " .. done .. (done == 1 and " chest" or " chests"))
-        end
-        return done
-    end
-
-    local function tryWave(immediate)
-        if not immediate and (G.ck() - GOURD.lastShrine) < SHRINE_COOL then return false end
-        if blocked() then setTask("shrine locked"); return false end
-        GOURD.lastShrine = G.ck()
-        setTask("starting trial")
-        travel(SHRINE, TRAVEL_T)
-        if not GOURD.running then return false end
-        local ok = fireShrine()
-        if ok then NOTIF.send("Hallowtide", "wave started") end
-        setTask("returning to safe")
-        travel(SAFE, TRAVEL_T)
-        return ok
-    end
-
-    local function guard()
-        setTask("boot: resolving state")
-        if not waitChar() then return end
-        if dead() then
-            setTask("boot: waiting respawn")
-            if not waitRespawn() then return end
-        end
-        if not inArena() then setTask("boot: moving to arena"); travel(SAFE, TRAVEL_T * 2) end
-        if not GOURD.running then return end
-        if #mobs() > 0 then setTask("boot: resuming trial"); return end
-        if #chests() > 0 then
-            setTask("boot: looting chests")
-            lootAll()
-            if not GOURD.running then return end
-        end
-        if blocked() then setTask("boot: shrine locked"); return end
-        tryWave(true)
-    end
-
-    local function step()
-        if not GOURD.hud or not GOURD.hud.Parent then
-            hudMake()
-            if GOURD.taskL and GOURD.taskText then GOURD.taskL.Text = GOURD.taskText end
-        end
-        if not refs() then G.tw(0.5); return end
-        if dead() then
-            setTask("waiting respawn")
-            if not waitRespawn() then return end
-            travel(SAFE, TRAVEL_T)
-            return
-        end
-        if #mobs() > 0 then
-            clearWave()
-            if GOURD.running then setTask("returning to safe"); travel(SAFE, TRAVEL_T) end
-            return
-        end
-        GOURD.idle = GOURD.idle + 1
-        local list = chests()
-        if #list > 0 and GOURD.idle >= CHEST_IDLE and (G.ck() - GOURD.lastLootRun) > CHEST_RETRY and not blocked() then
-            lootAll()
-            return
-        end
-        if #list > 0 then setTask("waiting: " .. #list .. " chests pending"); G.tw(1); return end
-        if GOURD.idle >= SHRINE_IDLE then
-            tryWave(false)
-            GOURD.idle = 0
-            return
-        end
-        setTask("waiting for wave")
-        G.tw(1)
-    end
-
-    function GOURD.status()
-        if not GOURD.running then
-            return game.PlaceId == HALLOW_PLACE and "ready · dungeon" or "requires dungeon place"
-        end
-        return GOURD.taskText or "running"
-    end
-
-    function GOURD.start()
-        if GOURD.running then return true end
-        if game.PlaceId ~= HALLOW_PLACE then
-            NOTIF.send("Hallowtide", "wrong place · requires Dungeon", nil, true)
-            return false
-        end
-        if type(mouse1click) ~= "function" and not G.VIM then
-            NOTIF.send("Hallowtide", "executor has no M1 input", nil, true)
-            return false
-        end
-        GOURD.running, GOURD.token = true, tostring(G.ck())
-        local tok = GOURD.token
-        GOURD.idle, GOURD.lastShrine, GOURD.lastLoot, GOURD.lastLootRun = 0, 0, 0, 0
-        GOURD.group, GOURD.taskText = nil, "booting"
-        GOURD.ncOwn = NC.conn == nil
-        pcall(NC.en)
-        hudMake()
-        NOTIF.send("Hallowtide", "auto gourdskipper engaged")
-        G.ts(function()
-            local ok = pcall(function()
-                guard()
-                while GOURD.running and GOURD.token == tok do
-                    if not pcall(step) then G.tw(1) end
-                end
-            end)
-            if not ok then G.tw(1) end
-            if GOURD.token == tok then
-                GOURD.stop(true)
-                S.gourd = false
-                pcall(UI.updTog)
-            end
-        end)
-        return true
-    end
-
-    function GOURD.stop(silent)
-        if not GOURD.running and not GOURD.hud then
-            if not silent then NOTIF.send("Hallowtide", "auto gourdskipper stopped") end
-            return
-        end
-        GOURD.running, GOURD.token = false, nil
-        if GOURD.ncOwn then pcall(NC.dis) end
-        GOURD.ncOwn = false
-        pcall(hudKill)
-        if not silent then NOTIF.send("Hallowtide", "auto gourdskipper stopped") end
-    end
-end
-
-
 local FLIP = {}
 do
     function FLIP.pktPlk() S.pktPlk = not S.pktPlk; if S.pktPlk then PACKET_PLK:start() else PACKET_PLK:stp() end; UI.updTog() end
@@ -4438,12 +3852,10 @@ do
     function FLIP.as() S.aSpd = not S.aSpd; if S.aSpd then ASPD.en() else ASPD.dis() end; UI.updTog() end
     function FLIP.mSpd() S.mSpd = not S.mSpd; UI.updTog() end
     function FLIP.nv() S.noVis = not S.noVis; if S.noVis then NOVIS.en() else NOVIS.dis() end; UI.updTog() end
-    function FLIP.op() S.opt = not S.opt; if S.opt then OPTIMIZE.en() else OPTIMIZE.dis() end; UI.updTog() end
     function FLIP.fps() S.fps = not S.fps; if S.fps then FPS.en() else FPS.dis() end; UI.updTog() end
     function FLIP.nkb() S.nkb = not S.nkb; if S.nkb then NKB.en() else NKB.dis() end; UI.updTog() end
     function FLIP.npcFreeze() S.npcFreeze = not S.npcFreeze; if S.npcFreeze then NPC_FREEZER.start() else NPC_FREEZER.stop() end; UI.updTog() end
     function FLIP.mod() S.modDetector = not S.modDetector; if S.modDetector then MODD.start() else MODD.stop() end; UI.updTog() end
-    function FLIP.modSnd() S.modSound = not S.modSound; UI.updTog() end
     function FLIP.modRep() S.modRepeat = not S.modRepeat; UI.updTog() end
     function FLIP.hpb() S.humanoidPathfindBreaker = not S.humanoidPathfindBreaker; if S.humanoidPathfindBreaker then PATHBREAK.start() else PATHBREAK.stop() end; UI.updTog() end
     function FLIP.back() S.attachToBack = not S.attachToBack; if S.attachToBack then BACK.start() else BACK.stop() end; UI.updTog() end
@@ -4457,16 +3869,6 @@ do
     function FLIP.chat() S.showChat = not S.showChat; if S.showChat then CHATSHOW.en() else CHATSHOW.dis() end; UI.updTog() end
     function FLIP.ab() S.autoBuild = not S.autoBuild; if S.autoBuild then BUILDER.start() else BUILDER.stop() end; UI.updTog() end
     function FLIP.abPts() S.autoPoints = not S.autoPoints; if S.autoPoints then BUILDER.startPts() else BUILDER.stopPts() end; UI.updTog() end
-    function FLIP.gourd() 
-        if not S.gourd then
-            if not GOURD.start() then UI.updTog(); return end
-            S.gourd = true
-        else
-            S.gourd = false
-            GOURD.stop(false)
-        end
-        UI.updTog()
-    end
 end
 
 
@@ -4483,13 +3885,12 @@ do
                 mobEsp = FLIP.mobEsp, nEsp = FLIP.nEsp, cEsp = FLIP.cEsp, autoloot = FLIP.autoloot, spec = FLIP.spec,
                 specRobloxNames = FLIP.specRobloxNames,
                 agil = FLIP.ag, agSpd = FLIP.agSpd, mSpd = FLIP.mSpd,
-                nc = FLIP.nc, nfd = FLIP.nf, fly = FLIP.fly, aSpd = FLIP.as, opt = FLIP.op, fps = FLIP.fps,
+                nc = FLIP.nc, nfd = FLIP.nf, fly = FLIP.fly, aSpd = FLIP.as, fps = FLIP.fps,
                 noVis = FLIP.nv,
                 nkb = FLIP.nkb, npcFreeze = FLIP.npcFreeze, modDetector = FLIP.mod,
                 humanoidPathfindBreaker = FLIP.hpb, attachToBack = FLIP.back,
                 effDisable = FLIP.eff, sanityHud = FLIP.sanity, bright = FLIP.bright, kbHud = FLIP.kbHud, showChat = FLIP.chat,
                 autoBuild = FLIP.ab, autoPoints = FLIP.abPts,
-                gourd = FLIP.gourd,
             }
             local hit = {}
             for feat, fn in pairs(map) do if kb[feat] and kc == kb[feat] then G.ti(hit, fn) end end
@@ -4533,7 +3934,6 @@ end
 
 local function destroyOld()
     for _, c in ipairs(statics) do pcall(function() c:Disconnect() end) end; G.tc(statics)
-    if GOURD then pcall(GOURD.stop, true) end; S.gourd = false
     ESP.stop(); MESP.stop(); NESP.stop(); CESP.stop(); AUTOLOOT.stop()
     PACKET_PLK:stp(); S.pktPlk = false
     if S.agil or S.agSpd then AGIL.dis(); S.agil, S.agSpd = false, false end
@@ -4543,7 +3943,6 @@ local function destroyOld()
     if NKB then NKB.dis() end; S.nkb = false
     if S.fly then FLY.dis(); S.fly = false end
     if S.noVis then NOVIS.dis(); S.noVis = false end
-    if S.opt then OPTIMIZE.dis(); S.opt = false end
     if S.fps then FLIP.fps() end
     if S.kbHud then KBHUD.dis(); S.kbHud = false end
     if NOTIF then NOTIF.wipe() end
@@ -4555,7 +3954,7 @@ local function destroyOld()
     if BACK and BACK.stop then BACK.stop() end; S.attachToBack = false
     if TELE then TELE.stop() end; S.tp = false
     if SPEC and SPEC.conn then SPEC.conn:Disconnect(); SPEC.conn = nil end
-    if MODD then MODD.stop() end; S.modDetector, S.modSound = false, false
+    if MODD then MODD.stop() end; S.modDetector = false
     pcall(CHATSHOW.dis); S.showChat = false
     if BUILDER then BUILDER.wipe() end; S.autoBuild, S.autoPoints = false, false
     if ASPD.cc then ASPD.cc:Disconnect(); ASPD.cc = nil end
@@ -5244,7 +4643,7 @@ local function createMenu()
     local TABS = {
         {id = "combat", label = "Combat"}, {id = "visual", label = "Visuals"},
         {id = "move", label = "Move"}, {id = "game", label = "Game"},
-        {id = "auto", label = "Automation"}, {id = "hallow", label = "Halloween"},
+
         {id = "util", label = "Utility"}, {id = "setup", label = "Settings"},
     }
     local tabY, tabH = 78, 24
@@ -5458,7 +4857,7 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
     
     
 
-    mkSec("combat"); mkSec("visual"); mkSec("move"); mkSec("game"); mkSec("auto"); mkSec("hallow"); mkSec("util"); mkSec("setup")
+    mkSec("combat"); mkSec("visual"); mkSec("move"); mkSec("game"); mkSec("auto"); mkSec("util"); mkSec("setup")
     UI._meta = {}
     local function meta(key, sec, tab, label, desc, sub)
         UI._meta[key] = {sec = sec, tab = tab, label = label, desc = desc, sub = sub}
@@ -5738,16 +5137,6 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
         meta("resetChar", "game", "game", "reset character", "reset")
     end
     do
-        local g = group("hallow", "hallowtide")
-        local a = feat(g, "gourd", "Auto Gourdskipper", "wave · kill order · chests", FLIP.gourd, GOURD.status)
-        meta("gourd", "hallow", "halloween", "auto gourdskipper", "hallowtide trial")
-        UI.info(a.root, -104, 8,
-            "Auto Gourdskipper Trial: Automatically start waves, kill gourdskippers and loot chests in order.\n\nSteps:\n1. Equip weapon\n2. Enable shiftlock\n3. Toggle on and hide the menu (" .. G.kName(kb.menuKey or CFG.MenuKey) .. ")",
-            nil, 348, 136)
-        local f = block(g, 26)
-        G.mkL(f, "dungeon only · place 8668476218", 12, 5, 320, 16, 12, Enum.Font.GothamMedium, Enum.TextXAlignment.Left, P.mt)
-    end
-    do
         local g = group("auto", "auto builder")
         local function autoRow(key, title, getSub, flip, infoTip)
             local f = G.new("Frame", g.inner)
@@ -5968,15 +5357,11 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
         local g = group("util", "safety")
         feat(g, "modDetector", "Mod detector", "staff alerts", FLIP.mod)
         meta("modDetector", "util", "utility", "mod detector", "staff alerts")
-        feat(g, "modSound", "Detector sound", "alert chime", FLIP.modSnd, nil, 16, true)
-        meta("modSound", "util", "utility", "detector sound", "chime")
         feat(g, "modRepeat", "Repeat alerts", "remind constantly", FLIP.modRep, nil, 16, true)
         meta("modRepeat", "util", "utility", "repeat alerts", "remind")
     end
     do
         local g = group("util", "performance")
-        feat(g, "opt", "Super optimize", "lite the world", FLIP.op)
-        meta("opt", "util", "utility", "super optimize", "lite")
         do local a = feat(g, "fps", "FPS limiter", "frame cap", FLIP.fps); a.val(function() return tostring(CFG.FpsVal) end) end
         meta("fps", "util", "utility", "fps limiter", "frame cap")
         local f = block(g, 52)
@@ -6368,7 +5753,6 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
             if UI.rows.autoBuild then UI.rows.autoBuild.sub(BUILDER.status()) end
             if UI.rows.autoPoints then UI.rows.autoPoints.sub(BUILDER.shrined and "post-shrine" or "pre-shrine") end
         end)
-        pcall(function() if UI.rows.gourd then UI.rows.gourd.sub(GOURD.status()) end end)
     end
 
     
@@ -6419,7 +5803,6 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
             nfd = function() pcall(NFD.dis) end,
             fly = function() pcall(function() if FLY.active then FLY.dis() end end) end,
             aSpd = function() pcall(ASPD.dis) end,
-            opt = function() pcall(OPTIMIZE.dis) end,
             fps = function() if S.fps then pcall(FPS.dis) end end,
             nkb = function() pcall(NKB.dis) end,
             noVis = function() pcall(NOVIS.dis) end,
@@ -6434,7 +5817,6 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
             showChat = function() pcall(CHATSHOW.dis) end,
             autoBuild = function() pcall(function() if BUILDER.running then BUILDER.stop() end end) end,
             autoPoints = function() pcall(function() if BUILDER.points then BUILDER.stopPts() end end) end,
-            gourd = function() pcall(function() GOURD.stop(true) end) end,
         }
         local changed = G._changedToggles or {}
         local hasChanged = false
@@ -6444,7 +5826,7 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
                 if changed[k] then pcall(fn) end
             end
         end
-        local order = {"pktPlk", "esp", "mobEsp", "nEsp", "cEsp", "autoloot", "spec", "agil", "agSpd", "nc", "nfd", "fly", "aSpd", "opt", "fps", "nkb", "noVis", "npcFreeze", "modDetector", "humanoidPathfindBreaker", "attachToBack", "effDisable", "sanityHud", "bright", "kbHud", "showChat", "autoBuild", "autoPoints", "gourd"}
+        local order = {"pktPlk", "esp", "mobEsp", "nEsp", "cEsp", "autoloot", "spec", "agil", "agSpd", "nc", "nfd", "fly", "aSpd", "fps", "nkb", "noVis", "npcFreeze", "modDetector", "humanoidPathfindBreaker", "attachToBack", "effDisable", "sanityHud", "bright", "kbHud", "showChat", "autoBuild", "autoPoints"}
         local starter = {
             pktPlk = function() PACKET_PLK:start() end,
             esp = function() ESP.start() end,
@@ -6456,7 +5838,6 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
             agil = function() AGIL.en() end, agSpd = function() AGIL.en() end,
             nc = function() NC.en() end, nfd = function() NFD.en() end,
             fly = function() FLY.en() end, aSpd = function() ASPD.en() end,
-            opt = function() OPTIMIZE.en() end,
             fps = function() S.fps = true; FPS.en(true) end,
             nkb = function() NKB.en() end,
             noVis = function() NOVIS.en() end,
@@ -6471,7 +5852,6 @@ g.BackgroundColor3 = P.panel; g.BackgroundTransparency = 0.15; g.BorderSizePixel
             showChat = function() CHATSHOW.en() end,
             autoBuild = function() BUILDER.start() end,
             autoPoints = function() BUILDER.startPts() end,
-            gourd = function() if not GOURD.start() then S.gourd = false end end,
         }
         for _, k in ipairs(order) do
             if S[k] == true and starter[k] then
@@ -6599,4 +5979,4 @@ shared.ArchiveCleanup = function()
     pcall(destroyOld)
     pcall(function() if FLY then FLY.dis() end end)
 end
--- build 1.0.49
+-- build 1.0.50
