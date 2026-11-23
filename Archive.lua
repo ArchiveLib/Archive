@@ -3,7 +3,6 @@ if type(shared.ArchiveCleanup) == "function" then pcall(shared.ArchiveCleanup) e
 
 local BUILD = "dev-build 1.0.55"
 
--- Optional settings can be set before the loadstring, e.g. settings.menu_kick = false
 local ARCHIVE_SETTINGS = {menu_kick = true}
 pcall(function()
     if type(settings) == "table" and settings.menu_kick ~= nil then
